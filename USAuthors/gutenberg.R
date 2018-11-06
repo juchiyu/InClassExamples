@@ -1,6 +1,7 @@
 # US Authors and punctuation data
 #===================================
-# This code was first written by Kharanshu Patel and edited by Ju-Chi Yu
+# The code in the function GetPuncCount.Author.R was first written by Kharanshu Patel 
+# This code was edited, made into pipelines and a function by Ju-Chi Yu
 graphics.off()
 rm(list = ls())
 
