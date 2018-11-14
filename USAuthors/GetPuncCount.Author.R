@@ -1,8 +1,8 @@
-GetPuncCount.Author <- function(AuthorName, punct){
+GetPuncCount.Author <- function(AuthorName, punct, language = 'en'){
 # Extract all characters
 AllText <- gutenberg_works(author == AuthorName, 
                            !str_detect(title, "Gutenberg"), # There are usually documents about how they are included in the project
-                           languages = 'en',
+                           languages = language,
                            only_text = TRUE,
                            only_languages = TRUE) %>%
   gutenberg_download(meta_fields = "title", strip = TRUE)
