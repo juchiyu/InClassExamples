@@ -10,7 +10,7 @@ This repository stores the code (and the output) for examplar in-class data. Her
    
    - data are counts
 
-2. The punctuation data of authors in English literature (extracted from the Gutenberg Project package in R)
+2. The punctuation data of authors in English and French literature (extracted from the Gutenberg Project package in R)
     
     o rows: authors of interest
     
@@ -18,9 +18,9 @@ This repository stores the code (and the output) for examplar in-class data. Her
    
    - data are counts
    
-   - Problem to solve: 
+   - Problems to solve: 
        
-       x I am missing three books:
+       x I am missing five books for US authors:
                
                A modest proposal by Jonathan Swift
                
@@ -33,5 +33,11 @@ This repository stores the code (and the output) for examplar in-class data. Her
                Chapters from my autobiography by Mark Twain
                
                Eve's Diary by Mark Twain
+               
+       x I am missing two books for French authors:
+               
+               Évangile selon Jean by Anonymous
+               
+               L'Illustration, No. 0040, 2 Décembre 1843 by Various
        
        x Some books of some authors are counted twice because they include both the complete version and the version with separated       chapters. For example, Adventure of Huckleberry Fin and Eve's Diary by Mark Twain. For this problem, we need to take a closer look at every author.
