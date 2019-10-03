@@ -34,7 +34,7 @@ This data set is sourced from Project Gutenburg. It represents punctuation use f
 First, let's import and clean the data.
 
 ```{r data}
-load("USAuthors/Data/EngLangAuthPunct.rda")
+load("../Data/EngLangAuthPunct.rda")
 
 #Keep only the contingency table
 auth.forCA <- auth.active %>% remove_rownames() %>% 
