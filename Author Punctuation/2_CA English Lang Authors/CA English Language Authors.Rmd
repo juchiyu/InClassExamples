@@ -2,9 +2,7 @@
 title: "CA English Language Authors"
 author: "Luke Moraglia"
 date: "10/3/2019"
-output:
-  html_document: default
-  pdf_document: default
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
