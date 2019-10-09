@@ -1,7 +1,7 @@
 ---
 title: "CA English Language Authors"
 author: "Luke Moraglia"
-date: "10/3/2019"
+date: "10/7/2019"
 output: github_document
 ---
 
@@ -241,7 +241,7 @@ In these plots, authors in blue wrote primarily fiction, while those in red wrot
 
 ### Symmetric
 
-```{r symmetric}
+```{r symmetric, fig.width = 8}
 
 # factor scores
 symMap  <- createFactorMapIJ(Fi,Fj,
@@ -272,14 +272,6 @@ map.sepJ.sup.sym <- symMap$baseMap +
 
 map.sepJ.sup.sym
 
-#put them side by side
-grid.arrange(
-    map.sepI.sup.sym, map.sepJ.sup.sym,
-    ncol = 2,nrow = 1,
-    top = textGrob("Factor scores", gp = gpar(fontsize = 18, font = 3))
-  )
-
-BothmapIJ <- recordPlot()
 ```
 
 The symmetric map allows us to see the items together easier, since one of them is normalized. Distances can only be interpretted between points of the same type (columns to columns, rows to rows). Dimension one appears to separate comma use from "other" use, while dimension 2 separates use of the period from the other two punctuation types. Looking at just the row profiles, we might want to know what the means of our two groups look like before we make any interpretations. 

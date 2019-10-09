@@ -1,7 +1,7 @@
 CA English Language Authors
 ================
 Luke Moraglia
-10/3/2019
+10/7/2019
 
 This ‘recipe’ is for how to perform a Correspondence Analysis in R,
 using inferential techniques of permutation and bootstrap.
@@ -349,21 +349,6 @@ map.sepJ.sup.sym
 
 ![](CA-English-Language-Authors_files/figure-gfm/symmetric-2.png)<!-- -->
 
-``` r
-#put them side by side
-grid.arrange(
-    map.sepI.sup.sym, map.sepJ.sup.sym,
-    ncol = 2,nrow = 1,
-    top = textGrob("Factor scores", gp = gpar(fontsize = 18, font = 3))
-  )
-```
-
-![](CA-English-Language-Authors_files/figure-gfm/symmetric-3.png)<!-- -->
-
-``` r
-BothmapIJ <- recordPlot()
-```
-
 The symmetric map allows us to see the items together easier, since one
 of them is normalized. Distances can only be interpretted between points
 of the same type (columns to columns, rows to rows). Dimension one
@@ -658,7 +643,7 @@ savedList <- saveGraph2pptx(file2Save.pptx = 'AllFigures_CA',
 ```
 
     ## Warning: File: AllFigures_CA.pptx already exists.
-    ##  Oldfile has been renamed: AllFigures_CA-2019-10-04.pptx
+    ##  Oldfile has been renamed: AllFigures_CA-2019-10-07.pptx
 
 Interpretation:
 
