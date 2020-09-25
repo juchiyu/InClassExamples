@@ -2,7 +2,7 @@
 # General info: -----------------------------------------------------------
 # This script is to extract the Cause of Death data from 2001-2016
 # Author: Ju-Chi Yu
-# Date: 10-22-2018
+# Date: 9-25-2020
 # Packages and functions --------------------------------------------------
 library(devtools)
 library(ggplot2)
@@ -51,7 +51,7 @@ source("GetCauseByAge.R")
 GetCauseByAge(year) # check
 
 # Now for all years
-year <- c(2001:2016)
+year <- c(2001:2018)
 
 # Creat an empty array
 
