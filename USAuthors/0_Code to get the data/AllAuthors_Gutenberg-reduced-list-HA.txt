@@ -1,0 +1,523 @@
+"2" "Lincoln, Abraham"
+
+"3" "Henry, Patrick"
+
+"4" "Adam, Paul"
+
+"5" "Carroll, Lewis"
+
+"7" "Melville, Herman"
+
+"12" "Milton, John"
+
+"14" "Roget, Peter Mark"
+
+"16" "Hardy, Thomas"
+
+"20" "Hawthorne, Nathaniel"
+
+"26" "Stevenson, Robert Louis"
+
+"28" "Dickens, Charles"
+
+"34" "Descartes, Ren?"
+
+"36" "Marx, Karl"
+
+"37" "Engels, Friedrich"
+
+"38" "Burroughs, Edgar Rice"
+
+"43" "Twain, Mark"
+
+"44" "Thoreau, Henry David"
+
+"45" "Crane, Stephen"
+
+"49" "Scott, Walter"
+
+"50" "Verne, Jules"
+
+"51" "Shelley, Mary Wollstonecraft"
+
+"55" "Shakespeare, William"
+
+"58" "Austen, Jane"
+
+"59" "Doyle, Arthur Conan"
+
+"72" "Hugo, Victor"
+
+"75" "Woolf, Virginia"
+
+"76" "Eliot, George"
+
+"77" "Paine, Thomas"
+
+"78" "Franklin, Benjamin"
+
+"80" "Coleridge, Samuel Taylor"
+
+"84" "Webster, Jean"
+
+"85" "Chopin, Kate"
+
+"96" "Wilde, Oscar"
+
+"97" "Leroux, Gaston"
+
+"98" "James, Henry"
+
+"104" "Lawson, Henry"
+
+"105" "London, Jack"
+
+"106" "Lawrence, D. H. (David Herbert)"
+
+"107" "Conrad, Joseph"
+
+"108" "Maugham, W. Somerset (William Somerset)"
+
+"114" "Kipling, Rudyard"
+
+"119" "FitzGerald, Edward"
+
+"120" "Webster, Noah"
+
+"124" "Chaucer, Geoffrey"
+
+"131" "Saki"
+
+"146" "Jerome, Jerome K. (Jerome Klapka)"
+
+"150" "Drake, Joseph Rodman"
+
+"152" "Fox, John"
+
+"153" "Muir, John"
+
+"169" "Proudhon, P.-J. (Pierre-Joseph)"
+
+"171" "Austin, Mary Hunter"
+
+"174" "Defoe, Daniel"
+
+"180" "Churchill, Winston"
+
+"195" "Anderson, Sherwood"
+
+"201" "Le Bon, Gustave"
+
+"209" "La Fayette, Madame de (Marie-Madeleine Pioche de La Vergne)"
+
+"210" "Pr?vost, abb?"
+
+"211" "Balzac, Honor? de"
+
+"221" "Calamity Jane"
+
+"247" "Potter, Beatrix"
+
+"248" "Lamb, Charles"
+
+"249" "Blake, William"
+
+"250" "Bacon, Francis"
+
+"251" "Johnson, Samuel"
+
+"258" "Maupassant, Guy de"
+
+"273" "James, William"
+
+"274" "Swift, Jonathan"
+
+"302" "Lovelace, Richard"
+
+"303" "Van Dyke, Henry"
+
+"310" "Carpenter, John A."
+
+"323" "Freud, Sigmund"
+
+"334" "Bront?, Anne"
+
+"335" "Bront?, Emily"
+
+"338" "Bront?, Charlotte"
+
+"346" "Stendhal"
+
+"348" "Fitzgerald, F. Scott (Francis Scott)"
+
+"349" "Sullivan, Arthur"
+
+"351" "Tocqueville, Alexis de"
+
+"357" "Chr?tien, de Troyes, active 12th century"
+
+"369" "Bacon, John M. (John Mackenzie)"
+
+"371" "Christie, Agatha"
+
+"383" "Shaw, Bernard"
+
+"387" "Spinoza, Benedictus de"
+
+"392" "Poe, Edgar Allan"
+
+"396" "Darwin, Charles"
+
+"400" "Dumas, Alexandre"
+
+"404" "Munro, John"
+
+"426" "Zola, ?mile"
+
+"443" "Rougemont, Louis de"
+
+"445" "Rabelais, Fran?ois"
+
+"450" "Babbage, Charles"
+
+"464" "Flaubert, Gustave"
+
+"465" "Rostand, Edmond"
+
+"483" "Huxley, Thomas Henry"
+
+"485" "Scott, Walter Dill"
+
+"487" "Eliot, T. S. (Thomas Stearns)"
+
+"510" "Graves, Robert"
+
+"534" "Shakespeare (spurious and doubtful works)"
+
+"547" "Dumas, Alexandre"
+
+"563" "King, Martin Luther, Jr."
+
+"564" "Johnston, Mary"
+
+"567" "Stephenson, Nathaniel W. (Nathaniel Wright)"
+
+"579" "Burgess, Thornton W. (Thornton Waldo)"
+
+"587" "Daudet, Alphonse"
+
+"594" "Fabre, Jean-Henri"
+
+"608" "Reeve, Arthur B. (Arthur Benjamin)"
+
+"609" "Cooper, Susan Fenimore"
+
+"610" "Sheridan, Richard Brinsley"
+
+"611" "France, Anatole"
+
+"621" "Racine, Jean"
+
+"629" "Huxley, Aldous"
+
+"631" "Lewis, C. S. (Clive Staples)"
+
+"632" "Wodehouse, P. G. (Pelham Grenville)"
+
+"633" "Sands, George W."
+
+"639" "Moli?re"
+
+"646" "Adams, Henry"
+
+"665" "Adams, Samuel"
+
+"669" "Saint-Pierre, Bernardin de"
+
+"691" "Sand, George"
+
+"692" "Loti, Pierre"
+
+"740" "Voltaire"
+
+"744" "M?rim?e, Prosper"
+
+"752" "Keats, John"
+
+"758" "Hesse, Hermann"
+
+"769" "Wallace, Alfred Russel"
+
+"772" "Corneille, Pierre"
+
+"779" "Taine, Hippolyte"
+
+"793" "Proust, Marcel"
+
+"802" "Wallace, Edgar"
+
+"827" "Joyce, James"
+
+"859" "Casanova, Giacomo"
+
+"871" "Frost, Robert"
+
+"901" "Burroughs, John"
+
+"905" "Hobbes, Thomas"
+
+"978" "Montaigne, Michel de"
+
+"1000" "Ives, Charles"
+
+"1007" "Liszt, Franz"
+
+"1022" "Rousseau, Jean-Jacques"
+
+"1026" "Disraeli, Benjamin, Earl of Beaconsfield"
+
+"1053" "Wagner, Richard"
+
+"1059" "Saint-Simon, Louis de Rouvroy, duc de"
+
+"1066" "Musset, Alfred de"
+
+"1068" "Vigny, Alfred de"
+"1069" "Hal?vy, Ludovic"
+
+"1081" "Leblanc, Maurice"
+
+"1090" "Mozart, Wolfgang Amadeus"
+
+"1122" "Malthus, T. R. (Thomas Robert)"
+
+"1167" "Bergson, Henri"
+
+"1196" "Renard, Jules"
+
+"1217" "Munro, William Bennett"
+"1218" "Verlaine, Paul"
+
+"1232" "Mallarm?, St?phane"
+
+"1270" "Littr?, Emile"
+
+"1276" "Churchill, Winston"
+
+"1278" "Bach, Johann Sebastian"
+
+"1302" "Einstein, Albert"
+
+"1306" "Jefferson, Thomas"
+"1307" "Monroe, James"
+"1308" "Jackson, Andrew"
+"1317" "Hayes, Rutherford Birchard"
+"1318" "Arthur, Chester Alan"
+"1319" "Cleveland, Grover"
+"1320" "McKinley, William"
+"1321" "Harding, Warren G. (Warren Gamaliel)"
+"1322" "Coolidge, Calvin"
+"1323" "Hoover, Herbert"
+"1324" "Truman, Harry S."
+"1325" "Eisenhower, Dwight D. (Dwight David)"
+"1326" "Kennedy, John F. (John Fitzgerald)"
+"1327" "Johnson, Lyndon B. (Lyndon Baines)"
+"1328" "Nixon, Richard M. (Richard Milhous)"
+"1329" "Ford, Gerald R."
+"1330" "Carter, Jimmy"
+"1331" "Reagan, Ronald"
+"1332" "Bush, George"
+"1333" "Bush, George W. (George Walker)"
+
+"1343" "Wilson, Woodrow"
+
+"1364" "Boileau Despr?aux, Nicolas"
+
+"1367" "Yeats, W. B. (William Butler)"
+
+"1377" "Brahms, Johannes"
+
+"1380" "Kafka, Franz"
+
+"1396" "Train, Arthur Cheney"
+
+"1398" "La Fontaine, Jean de"
+
+"1402" "Kandinsky, Wassily"
+
+"1405" "Cherubini, Eugenio"
+
+"1429" "Brillat-Savarin"
+
+"1434" "Darwin, Francis, Sir"
+
+"1444" "Schubert, Franz"
+
+"1479" "Wittgenstein, Ludwig"
+
+"1487" "Russell, George William"
+
+"1490" "Alain-Fournier"
+
+"1493" "Sylvester, Charles Herbert"
+
+"1497" "Spencer, Herbert"
+
+"1506" "Dor?, Gustave"
+
+"1541" "Schumann, Robert"
+
+"1545" "Baudelaire, Charles"
+
+"1635" "Colette"
+
+"1639" "Diderot, Denis"
+
+"1725" "Vincent de Paul, Father"
+
+"1730" "Gide, Andr?"
+"1731" "Moore, Thomas"
+
+"1963" "Lafayette, Marie Joseph Paul Yves Roch Gilbert Du Motier, marquis de"
+
+"1991" "Cheney, Roland Jon"
+
+"2349" "Darwin, Erasmus"
+
+
+"2613" "Clinton, Bill"
+
+"2664" "Schopenhauer, Arthur"
+
+"2679" "Champollion, Jean-Fran?ois"
+
+"2681" "Maspero, G. (Gaston)"
+
+"3153" "Huysmans, J.-K. (Joris-Karl)"
+
+"3162" "Cartier, Jacques"
+
+"3210" "Marivaux, Pierre Carlet de Chamblain de"
+
+"3300" "Lenclos, Ninon de"
+
+
+"3310" "Du Maurier, George"
+
+"3316" "Tyson, Edward"
+"3317" "Baden-Powell, B. H. (Baden Henry)
+
+
+"3558" "Tesla, Nikola"
+
+"3650" "Coleridge, Stephen"
+
+"3664" "Allais, Alphonse"
+
+"3668" "Barbey d'Aurevilly, J. (Jules)"
+
+"3734" "Chamberlain, George Agnew"
+
+"3816" "Abelard, Peter"
+
+"3821" "Gautier, Th?ophile"
+
+"3882" "Faraday, Michael"
+
+"3935" "Helvetius, Johann Friedrich"
+
+"3958" "Vall?s, Jules"
+
+"3964" "Huygens, Christiaan"
+
+
+"5171" "La Bruy?re, Jean de"
+
+
+"5232" "Kobb?, Gustav"
+
+
+"5262" "Engel, Georg"
+
+
+
+"5351" "Pirandello, Luigi"
+
+
+"5403" "Mendelssohn-Bartholdy, Felix"
+
+
+"5442" "Michelet, Jules"
+
+
+"5449" "Viollet-le-Duc, Eug?ne-Emmanuel"
+
+
+
+"5863" "Fitzgerald, Robert"
+
+
+"5882" "D'Annunzio, Gabriele"
+
+
+"6088" "Talleyrand-P?rigord, Charles Maurice de, prince de B?n?vent"
+
+
+"6224" "Itard, Jean Marc Gaspard"
+
+"6239" "Dedekind, Richard"
+
+
+"6840" "Boito, Arrigo"
+
+
+"6977" "R?gnier, Henri de"
+
+"7211" "Montesquieu, Charles de Secondat, baron de"
+
+"7234" "Gounod, Charles"
+
+"7366" "Whistler, James McNeill"
+
+"9233" "Condorcet, Jean-Antoine-Nicolas de Caritat, marquis de"
+
+"9236" "Robespierre, Maximilien"
+
+"9242" "Volterra, Vito"
+
+"9246" "Hadamard, Jacques"
+
+"9425" "Hamilton, Francis"
+
+"9492" "Feydeau, Ernest"
+
+"9512" "Lovecraft, H. P. (Howard Phillips)"
+
+"9864" "Planck, Max"
+
+"11191" "Engel, Alexander"
+"11192" "Andreas-Salom?, Lou"
+
+"11260" "Peano, Giuseppe"
+
+"11524" "Lagrange, J. L. (Joseph Louis)"
+
+"11551" "Massenet, Jules"
+
+"12103" "Fleming, J. A. (John Ambrose), Sir"
+
+"12157" "Darwin, George Howard, Sir"
+"12158" "Douce, Francis"
+
+
+"13752" "S?vign?, Madame de"
+
+"14228" "Napoleon III, Emperor of the French"
+"14254" "Chateaubriand, Ren?"
+
+"14273" "Montagu, Edward Wortley"
+
+"14456" "Claudel, Paul"
+"14457" "Walters, H. B."
+
+"15747" "Voltaire, Francois-Marie de"

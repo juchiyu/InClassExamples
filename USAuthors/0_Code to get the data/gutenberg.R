@@ -17,13 +17,23 @@ library(stringr)
 library(stringi)
 library(pbapply)
 
-source("GetPuncCount.Author.R")
+source("0_Code to get the data/GetPuncCount.Author.R")
+
+load("Data/AllPunctCount.sDisCA.rda")
+re.run <- rownames(AllPunctCount.sDisCA[rowSums(AllPunctCount.sDisCA) == 0,])
 
 # All authors -----------------------------------------------------------------
-aut <- gutenberg_authors
+aut <- gutenberg_authors$author
 # authorOI <- c("Austen, Jane", "Dickens, Charles")#,
 
 # Authors of interest ----
+full.list <- read.table("0_Code to get the data/AllAuthors_Gutenberg.txt")
+authorlist.HA <- read.table("0_Code to get the data/AllAuthors_Gutenberg-reduced-list-HA.txt")
+author4sDisCA <- full.list[authorlist.HA$V1,]
+author4sDisCA.redo.idx <- authorlist.HA[which(authorlist.HA$V2 %in% re.run),"V1"]
+author4sDisCA.redo <- full.list[author4sDisCA.redo.idx,]
+list.idx <- cbind(re.run, author4sDisCA)
+
 authorOI <- c("Christie, Agatha",
               "Einstein, Albert",
               "Huxley, Aldous",
@@ -162,9 +172,23 @@ matches.all <- c(",",".","?","!",":",";","-","\u2013","\'","\"")
 
 
 # Extract data ------------------------------------------------------------
+# takes too long (later...)
+# AllPunctCount.EnFrAuthor <- pbsapply(aut,GetPuncCount.Author,punct = matches.all, language = c('en', 'fr')) %>% t()
 AllPunctCount.Author <- pbsapply(authorOI,GetPuncCount.Author,punct = matches.all) %>% t()
 AllPunctCount.AuthorFr <- pbsapply(authorOI_Fr, GetPuncCount.Author,punct = matches.all,language = 'fr') %>% t()
+AllPunctCount.sDisCA.fr <- pbsapply(author4sDisCA, GetPuncCount.Author,punct = matches.all,language = c('fr')) %>% t()
+AllPunctCount.sDisCA.en <- pbsapply(author4sDisCA, GetPuncCount.Author,punct = matches.all,language = c('en')) %>% t()
+AllPunctCount.sDisCA.fr.redo <- pbsapply(author4sDisCA.redo, GetPuncCount.Author,punct = matches.all,language = c('fr')) %>% t()
+AllPunctCount.sDisCA.en.redo <- pbsapply(author4sDisCA.redo, GetPuncCount.Author,punct = matches.all,language = c('en')) %>% t()
 
+rownames(AllPunctCount.sDisCA.fr) <- rownames(AllPunctCount.sDisCA.en) <- author4sDisCA
+  
+AllPunctCount.sDisCA.fr[author4sDisCA.redo,] <- AllPunctCount.sDisCA.fr.redo
+AllPunctCount.sDisCA.en[author4sDisCA.redo,] <- AllPunctCount.sDisCA.en.redo
+
+AllPunctCount.sDisCA <- AllPunctCount.sDisCA.fr + AllPunctCount.sDisCA.en
+
+save(AllPunctCount.sDisCA, AllPunctCount.sDisCA.fr, AllPunctCount.sDisCA.en, file = "AllPunctCount.sDisCA.rda")
 
 # Missing book  -----------------------------------------------------------
 ## ID 4688
@@ -174,3 +198,5 @@ AutPunc.count_4688 <- sapply(matches.all,  function(x) length(gregexpr(x, text_s
 AutPunc.count_4688[grepl('^1$',AutPunc.count_4688)] <- 0
 ## Add back
 AllPunctCount.AuthorFr['Mallarmé, Stéphane',] <- AutPunc.count_4688
+
+AllPunctCount.everyone['Mallarmé, Stéphane',] <- AutPunc.count_4688

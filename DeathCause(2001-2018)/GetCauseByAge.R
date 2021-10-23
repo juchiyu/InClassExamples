@@ -1,3 +1,5 @@
+## This function only works for the individual txt file of each year
+
 GetCauseByAge <- function(year){
   data <- sprintf("RawData/Multiple Cause of Death, %s.txt", year) %>% # create file name
     data.frame(read.table(.,header = TRUE,sep = "\t")) %>%             # read data file
