@@ -384,7 +384,6 @@
 
 "2349" "Darwin, Erasmus"
 
-
 "2613" "Clinton, Bill"
 
 "2664" "Schopenhauer, Arthur"
@@ -401,14 +400,13 @@
 
 "3300" "Lenclos, Ninon de"
 
-
 "3310" "Du Maurier, George"
 
 "3316" "Tyson, Edward"
+
 "3317" "Baden-Powell, B. H. (Baden Henry)
 
-
-"3558" "Tesla, Nikola"
+"3558 "Tesla, Nikola"
 
 "3650" "Coleridge, Stephen"
 

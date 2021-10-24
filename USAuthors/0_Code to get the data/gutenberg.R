@@ -19,8 +19,8 @@ library(pbapply)
 
 source("0_Code to get the data/GetPuncCount.Author.R")
 
-load("Data/AllPunctCount.sDisCA.rda")
-re.run <- rownames(AllPunctCount.sDisCA[rowSums(AllPunctCount.sDisCA) == 0,])
+# load("Data/AllPunctCount.sDisCA.rda")
+# re.run <- rownames(AllPunctCount.sDisCA[rowSums(AllPunctCount.sDisCA) == 0,])
 
 # All authors -----------------------------------------------------------------
 aut <- gutenberg_authors$author
@@ -30,9 +30,11 @@ aut <- gutenberg_authors$author
 full.list <- read.table("0_Code to get the data/AllAuthors_Gutenberg.txt")
 authorlist.HA <- read.table("0_Code to get the data/AllAuthors_Gutenberg-reduced-list-HA.txt")
 author4sDisCA <- full.list[authorlist.HA$V1,]
-author4sDisCA.redo.idx <- authorlist.HA[which(authorlist.HA$V2 %in% re.run),"V1"]
-author4sDisCA.redo <- full.list[author4sDisCA.redo.idx,]
-list.idx <- cbind(re.run, author4sDisCA)
+# Corrections (for accent) ------------------------------
+# author4sDisCA.redo.idx <- authorlist.HA[which(authorlist.HA$V2 %in% re.run),"V1"]
+# author4sDisCA.redo <- full.list[author4sDisCA.redo.idx,]
+# list.idx <- cbind(re.run, author4sDisCA)
+#--------------------------------------------------------
 
 authorOI <- c("Christie, Agatha",
               "Einstein, Albert",
@@ -178,13 +180,15 @@ AllPunctCount.Author <- pbsapply(authorOI,GetPuncCount.Author,punct = matches.al
 AllPunctCount.AuthorFr <- pbsapply(authorOI_Fr, GetPuncCount.Author,punct = matches.all,language = 'fr') %>% t()
 AllPunctCount.sDisCA.fr <- pbsapply(author4sDisCA, GetPuncCount.Author,punct = matches.all,language = c('fr')) %>% t()
 AllPunctCount.sDisCA.en <- pbsapply(author4sDisCA, GetPuncCount.Author,punct = matches.all,language = c('en')) %>% t()
-AllPunctCount.sDisCA.fr.redo <- pbsapply(author4sDisCA.redo, GetPuncCount.Author,punct = matches.all,language = c('fr')) %>% t()
-AllPunctCount.sDisCA.en.redo <- pbsapply(author4sDisCA.redo, GetPuncCount.Author,punct = matches.all,language = c('en')) %>% t()
-
-rownames(AllPunctCount.sDisCA.fr) <- rownames(AllPunctCount.sDisCA.en) <- author4sDisCA
-  
-AllPunctCount.sDisCA.fr[author4sDisCA.redo,] <- AllPunctCount.sDisCA.fr.redo
-AllPunctCount.sDisCA.en[author4sDisCA.redo,] <- AllPunctCount.sDisCA.en.redo
+## Corrections -----------------------------
+# AllPunctCount.sDisCA.fr.redo <- pbsapply(author4sDisCA.redo, GetPuncCount.Author,punct = matches.all,language = c('fr')) %>% t()
+# AllPunctCount.sDisCA.en.redo <- pbsapply(author4sDisCA.redo, GetPuncCount.Author,punct = matches.all,language = c('en')) %>% t()
+# 
+# rownames(AllPunctCount.sDisCA) <- rownames(AllPunctCount.sDisCA.fr) <- rownames(AllPunctCount.sDisCA.en) <- author4sDisCA
+#   
+# AllPunctCount.sDisCA.fr[author4sDisCA.redo,] <- AllPunctCount.sDisCA.fr.redo
+# AllPunctCount.sDisCA.en[author4sDisCA.redo,] <- AllPunctCount.sDisCA.en.redo
+#-------------------------------------------
 
 AllPunctCount.sDisCA <- AllPunctCount.sDisCA.fr + AllPunctCount.sDisCA.en
 
