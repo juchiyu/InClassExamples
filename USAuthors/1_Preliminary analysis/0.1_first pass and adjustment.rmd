@@ -98,11 +98,11 @@ q <- ggplot(fj2plot, aes(x = Component1, y = Component2, label = rownames(ca.res
   geom_text_repel(size = 7) + theme_bw()
 
 p2 <- ggplot() +
-  geom_point(data = fi2plot, aes(x = Component1, y = Component2, text = rownames(ca.res$ExPosition.Data$fi)), color = "maroon") +
+  geom_point(data = fi2plot, aes(x = Component1, y = Component2, label = rownames(ca.res$ExPosition.Data$fi)), color = "maroon") +
   geom_point(data = fj2plot, aes(x = Component1, y = Component2, label = rownames(ca.res$ExPosition.Data$fj)), color = "darkolivegreen", pch = 18, size = 3) + 
   geom_text_repel(data = fj2plot, aes(x = Component1, y = Component2, label = rownames(ca.res$ExPosition.Data$fj)), color = "darkolivegreen", size = 7) + theme_bw()
 
-ggplotly(p, tooltip = c("text"))
+ggplotly(p, tooltip = c("label"))
 ```
 
 #### Punctuations
