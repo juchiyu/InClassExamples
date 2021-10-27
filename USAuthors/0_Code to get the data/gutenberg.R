@@ -170,7 +170,8 @@ authorOI_Fr <- c("Stendhal",
                  "Montesquiou-Fézensac, Robert de")
 
 # Punctuations of interest ------------------------------------------------
-matches.all <- c(",",".","?","!",":",";","-","\u2013","\'","\"") 
+matches.all <- c(",",".","?","!",":",";","-","\u2013","\'","\"", "\u00AB", "\u00BB") 
+# matches.fr <- c(",",".","?","!",":",";","-","\u2013","\'","\"", "\u00AB", "\u00BB") 
 
 
 # Extract data ------------------------------------------------------------
@@ -192,7 +193,7 @@ AllPunctCount.sDisCA.en <- pbsapply(author4sDisCA, GetPuncCount.Author,punct = m
 
 AllPunctCount.sDisCA <- AllPunctCount.sDisCA.fr + AllPunctCount.sDisCA.en
 
-save(AllPunctCount.sDisCA, AllPunctCount.sDisCA.fr, AllPunctCount.sDisCA.en, file = "AllPunctCount.sDisCA.rda")
+save(AllPunctCount.sDisCA, AllPunctCount.sDisCA.fr, AllPunctCount.sDisCA.en, file = "Data/AllPunctCount.sDisCA.rda")
 
 # Missing book  -----------------------------------------------------------
 ## ID 4688
