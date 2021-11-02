@@ -1,0 +1,122 @@
+---
+title: "0.2_data cleaning based on info"
+author: "Ju-Chi.Yu"
+date: "10/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+
+load("../Data/AllPunctCount.sDisCA.rda")
+
+### Change this line ========================================================
+raw.dx <- readxl::read_xlsx("../Data/Author.design-2-HA.xlsx") %>% as.data.frame
+#============================================================================
+
+
+## combine - and n-dash
+alldat.cmb <- cbind(AllPunctCount.sDisCA[, c(1,2,3,4,5,6,9)], rowSums(AllPunctCount.sDisCA[,10:12]), AllPunctCount.sDisCA[,7] + AllPunctCount.sDisCA[,8])
+frdat.cmb <- cbind(AllPunctCount.sDisCA.fr[, c(1,2,3,4,5,6,9)], rowSums(AllPunctCount.sDisCA.fr[,10:12]), AllPunctCount.sDisCA.fr[,7] + AllPunctCount.sDisCA.fr[,8])
+endat.cmb <- cbind(AllPunctCount.sDisCA.en[, c(1,2,3,4,5,6,9)], rowSums(AllPunctCount.sDisCA.en[,10:12]), AllPunctCount.sDisCA.en[,7] + AllPunctCount.sDisCA.en[,8])
+colnames(endat.cmb)[8] <- colnames(frdat.cmb)[8] <- colnames(alldat.cmb)[8] <- "\"\u00AB\u00BB"
+colnames(endat.cmb)[9] <- colnames(frdat.cmb)[9] <- colnames(alldat.cmb)[9] <- "-\u2013"
+
+## delete duplicated and all-zeros rows
+alldat.cmb <- alldat.cmb[duplicated(alldat.cmb) == FALSE,]
+frdat.cmb  <- frdat.cmb[duplicated(frdat.cmb) == FALSE,]
+endat.cmb  <- endat.cmb[duplicated(endat.cmb) == FALSE,]
+
+# specify different row names for Poe, Edgar Allan
+rownames(frdat.cmb)[rownames(frdat.cmb) == "Poe, Edgar Allan"] <- "Poedelaire"
+
+```
+
+## Data cleaning
+
++ Selection criteria: We excluded authors that punctuate less than 2000 times
+
+```{r}
+# check and remove duplicated rows (repeated authors)
+raw.dx <- raw.dx[duplicated(raw.dx) == FALSE, ]
+# recode "keep","Supp", and "keepDiCA" columns
+raw.dx$`keep-balanced` <- is.na(raw.dx$`keep-balanced`)
+raw.dx$`keep-unbalanced` <- is.na(raw.dx$`keep-unbalanced`)
+raw.dx$Supp <- !is.na(raw.dx$Supp)
+# raw.dx$keepDiCA <- !is.na(raw.dx$keepDiCA)
+
+# recode Time
+Time.idx <- c(`18th` = "18th and before", `17th` = "18th and before", `14th` = "18th and before", `16th` = "18th and before", `20th` = "20th on", `21st` = "20th on")
+raw.dx$Time.recod <- recode(raw.dx$Time, !!! Time.idx)
+
+# make these four columns factors
+raw.dx[,c("Language", "Nationality", "Type", "Time", "Time.recod", "Note")] <- lapply(raw.dx[,c("Language", "Nationality", "Type", "Time", "Time.recod", "Note")], factor)
+
+# specify different row names for Poe, Edgar Allan
+raw.dx[which(raw.dx$Authors == "Poe, Edgar Allan" & raw.dx$Language == "fr"),"Authors"] <- "Poedelaire"
+
+
+data.dx.blnc <- raw.dx[which(raw.dx$`keep-balanced` == "TRUE" & raw.dx$Supp == "FALSE"),]
+
+data.dx.unblnc <- raw.dx[which(raw.dx$`keep-unbalanced` == "TRUE" & raw.dx$Supp == "FALSE"),]
+
+supp.dx <- raw.dx[which(raw.dx$Supp == "TRUE"),]
+
+# data.dx <- raw.dx[which(raw.dx$keepDiCA == "TRUE" & raw.dx$Supp == "FALSE"),]
+# supp.dx <- raw.dx[which(raw.dx$keepDiCA == "TRUE" & raw.dx$Supp == "TRUE"),]
+```
+
+## Get data from the correct language
+
+```{r}
+## Create empty matrix
+FrEnAuthors.unblnc <- matrix(nrow  = nrow(data.dx.unblnc), ncol = ncol(alldat.cmb), dimnames = list(data.dx.unblnc$Authors, colnames(alldat.cmb)))
+
+## extract authors' data from the English subset
+en.author <- data.dx.unblnc[which(data.dx.unblnc$Language == "en"), "Authors"]
+FrEnAuthors.unblnc[en.author,] <- endat.cmb[en.author,]
+
+## extract authors' data from the French subset
+fr.author <- data.dx.unblnc[which(data.dx.unblnc$Language == "fr"), "Authors"]
+FrEnAuthors.unblnc[fr.author,] <- frdat.cmb[fr.author,]
+
+
+## *** *** *** *** *** *** *** *** ***
+## ONLY RUN FOR THE BALANCED DATA SET ===========================
+## *** *** *** *** *** *** *** *** ***
+## merge Bronte
+FrEnAuthors.blnc <- FrEnAuthors.unblnc[which(data.dx.unblnc$`keep-balanced` == TRUE),]
+Brontë <- colSums(FrEnAuthors.blnc[which(data.dx.blnc$Note == "merge"),] )
+FrEnAuthors.blnc <- rbind(FrEnAuthors.blnc, Brontë)
+data.dx.blnc <- rbind(data.dx.blnc, c("T", "Brontë", "en", "uk", "TRUE", "TRUE", "FALSE", "novelist", "19th", NA, "19th"))
+
+## delete Bronte
+FrEnAuthors.blnc <- FrEnAuthors.blnc[-which(data.dx.blnc$Note == "merge"),]
+data.dx.blnc <- data.dx.blnc[-which(data.dx.blnc$Note == "merge"),]
+```
+
+## Get supplementary
+
+```{r}
+FrEnAuthors.supp <- matrix(nrow  = nrow(supp.dx), ncol = ncol(alldat.cmb), dimnames = list(supp.dx$Authors, colnames(alldat.cmb)))
+
+## extract authors' data from the English subset
+en.author.supp <- supp.dx[which(supp.dx$Language == "en"), "Authors"]
+FrEnAuthors.supp[en.author.supp,] <- endat.cmb[en.author.supp,]
+
+## extract authors' data from the French subset
+fr.author.supp <- supp.dx[which(supp.dx$Language == "fr"), "Authors"]
+FrEnAuthors.supp[fr.author.supp,] <- frdat.cmb[fr.author.supp,]
+```
+
+## Save cleaned authors data
+
+```{r}
+save(FrEnAuthors.unblnc, data.dx.unblnc, FrEnAuthors.blnc, data.dx.blnc, FrEnAuthors.supp, supp.dx, file = "../Data/EnFrAuthors_blnc_unblnc.rda")
+```
+
+
+
+

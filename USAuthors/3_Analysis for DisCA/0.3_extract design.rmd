@@ -1,0 +1,21 @@
+---
+title: "0.3_extract design"
+author: "Ju-Chi.Yu"
+date: "10/30/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## We want to group the authors into 7 groups
+
++ French - 18th and before
+
++ French - 19th
+
++ French - 20th and on
+
++ English (including )

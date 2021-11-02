@@ -1,0 +1,257 @@
+---
+title: "1_CA on cleaned author's data"
+author: "Ju-Chi.Yu"
+date: "10/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ExPosition)
+library(PTCA4CATA)
+library(ggplot2)
+library(ggrepel)
+library(tidyverse)
+library(plotly)
+library(RColorBrewer)
+library(kableExtra)
+
+load("../Data/EnFrAuthors_blnc_unblnc.rda")
+```
+
+# Data
+
+## The contingency table:
+
+```{r}
+FrEnAuthors.unblnc <- FrEnAuthors
+FrEnAuthors <- FrEnAuthors.blnc
+knitr::kable(FrEnAuthors) %>% kable_styling("striped", full_width = F) %>% 
+ scroll_box(width = "800px", height = "600px")
+```
+
+## The pattern in heatmap
+```{r}
+# Original data
+heatmap(FrEnAuthors, Rowv = NA, Colv = NA)
+# Row profiles
+heatmap(makeRowProfiles(FrEnAuthors)$rowProfiles, Rowv = NA, Colv = NA)
+# Deviation from independence
+coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25) # Pink (Neg) to Green (Pos)
+heatmap(makeRowProfiles(FrEnAuthors)$deviations, Rowv = NA, Colv = NA, col = coul)
+```
+
+# Run CA
+```{r}
+data.dx.unblnc <- data.dx
+data.dx <- data.dx.blnc
+ca.res <- epCA(FrEnAuthors, symmetric = TRUE, graphs = FALSE)
+
+## get color
+col.idx <- c(us = "maroon", fr = "royalblue3", uk = "darkorange1", ca = "red")
+col.nationality <- recode(data.dx$Nationality, !!! col.idx)
+
+col.idx2 <- c(`18th and before` = "#6A5ACD", `19th` = "#BA55D3", `20th on` = "#EE6AA7")
+col.time <- recode(data.dx$Time.recod, !!! col.idx2)
+
+col.type <- createColorVectorsByDesign(makeNominalData(as.matrix(data.dx$Type)))
+```
+
+## Scree plot
+```{r}
+PlotScree(ca.res$ExPosition.Data$eigs)
+```
+
+## Factor scores {.tabset}
+
+### Components 1 & 2
+
+#### Biplot
+
+```{r}
+ca.plot.byNation <- createFactorMapIJ(ca.res$ExPosition.Data$fi, ca.res$ExPosition.Data$fj,axis1 = 1, axis2 = 2,
+                                      text.cex.i = 3,
+                                      col.points.i = col.nationality,
+                                      col.labels.i = col.nationality,
+                                      title = "Authors by nationality - Symmetric")
+
+ca.plot.byTime <- createFactorMapIJ(ca.res$ExPosition.Data$fi, ca.res$ExPosition.Data$fj,axis1 = 1, axis2 = 2,
+                                    text.cex.i = 3,
+                                    col.points.i = col.time,
+                                    col.labels.i = col.time,
+                                    title = "Authors by Time - Symmetric")
+
+ca.plot.byType <- createFactorMapIJ(ca.res$ExPosition.Data$fi, ca.res$ExPosition.Data$fj,axis1 = 1, axis2 = 2,
+                                    text.cex.i = 3,
+                                    col.points.i = col.type$oc,
+                                    col.labels.i = col.type$oc,
+                                    title = "Authors by Type - Symmetric")
+
+ca.label <- createxyLabels.gen(1,2,
+                               lambda = ca.res$ExPosition.Data$eigs,
+                               tau = round(ca.res$ExPosition.Data$t),
+                               axisName = "Component "
+)
+
+ca.plot.byNation$baseMap + ca.label + ca.plot.byNation$I_points + ca.plot.byNation$J_points + ca.plot.byNation$J_labels
+
+ca.plot.byTime$baseMap + ca.label + ca.plot.byTime$I_points + ca.plot.byTime$J_points + ca.plot.byTime$J_labels
+
+ca.plot.byType$baseMap + ca.label + ca.plot.byType$I_points + ca.plot.byType$J_points + ca.plot.byType$J_labels
+```
+
+#### Interactive
+
+```{r}
+fi2plot <- ca.res$ExPosition.Data$fi[,1:2] %>% as.data.frame
+fj2plot <- ca.res$ExPosition.Data$fj[,1:2] %>% as.data.frame
+colnames(fj2plot) <- colnames(fi2plot) <- paste0("Component", c(1,2))
+
+p2 <- ggplot() +
+  geom_hline(yintercept = 0, size = 0.1) + geom_vline(xintercept = 0, size = 0.1) +
+  geom_point(data = fi2plot, aes(x = Component1, y = Component2, text = rownames(ca.res$ExPosition.Data$fi)), color = col.nationality) +
+  geom_point(data = fj2plot, aes(x = Component1, y = Component2), color = "darkolivegreen", pch = 18, size = 3) + 
+  geom_text(data = fj2plot, aes(x = Component1, y = Component2, label = rownames(ca.res$ExPosition.Data$fj)), color = "darkolivegreen", size = 5, nudge_y = 0.08) + 
+  theme_bw()
+
+ggplotly(p2, tooltip = c("text"))
+```
+
+##### Check interesting authors
+
+```{r}
+checkPoe <- FrEnAuthors[c("Poe, Edgar Allan", "Poedelaire", "Baudelaire, Charles"),]
+checkPoe/rowSums(checkPoe)
+
+## Select types
+type2pick <- c("politician", "philosopher", "scientist", "naturalist")
+experts <- cbind(FrEnAuthors[which(data.dx$Type %in% type2pick),], data.dx[which(data.dx$Type %in% type2pick),c("Nationality", "Type")])
+experts.ord <- experts[order(experts$Type),c(1:9)]
+showres <- cbind(experts.ord/rowSums(experts.ord), experts[order(experts$Type),c("Type", "Nationality")])
+heatmap(as.matrix(experts.ord/rowSums(experts.ord)), Rowv = NA, Colv = NA, RowSideColors = createColorVectorsByDesign(makeNominalData(as.matrix(showres$Type)))$oc)
+```
+
+
+
+#### Row factor scores (Authors)
+```{r}
+ca.plot.byNation <- createFactorMap(ca.res$ExPosition.Data$fi,axis1 = 1, axis2 = 2,
+                                    text.cex = 3,
+                                    col.points = col.nationality,
+                                    col.labels = col.nationality,
+                                    title = "Authors by nationality - Symmetric")#,
+
+ca.plot.byNation$zeMap + ca.label
+
+ca.plot.byTime <- createFactorMap(ca.res$ExPosition.Data$fi,axis1 = 1, axis2 = 2,
+                                  text.cex = 3,
+                                  col.points = col.time,
+                                  col.labels = col.time,
+                                  title = "Authors by Time - Symmetric")#,
+
+ca.plot.byTime$zeMap + ca.label
+
+```
+
+#### Column factor scores (Punctuations)
+```{r}
+ca.j.plot <- createFactorMap(ca.res$ExPosition.Data$fj,
+                             axis1 = 1, axis2 = 2, 
+                             text.cex = 5,
+                             col.points = "darkolivegreen",
+                             col.labels = "darkolivegreen",
+                             pch = 18,
+                             title = "Punctuations - Symmetric")#,
+
+ca.j.plot$zeMap + ca.label
+```
+
+### Components 2 & 3
+
+#### Biplot
+
+```{r}
+ca.plot.byNation23 <- createFactorMapIJ(ca.res$ExPosition.Data$fi, ca.res$ExPosition.Data$fj,
+                                        axis1 = 2, axis2 = 3,
+                                        text.cex.i = 3,
+                                        col.points.i = col.nationality,
+                                        col.labels.i = col.nationality,
+                                        title = "Authors by nationality - Symmetric")
+
+ca.plot.byTime23 <- createFactorMapIJ(ca.res$ExPosition.Data$fi, ca.res$ExPosition.Data$fj,
+                                    axis1 = 2, axis2 = 3,
+                                    text.cex.i = 3,
+                                    col.points.i = col.time,
+                                    col.labels.i = col.time,
+                                    title = "Authors by Time - Symmetric")
+
+ca.plot.byType23 <- createFactorMapIJ(ca.res$ExPosition.Data$fi, ca.res$ExPosition.Data$fj,
+                                    axis1 = 2, axis2 = 3,
+                                    text.cex.i = 3,
+                                    col.points.i = col.type$oc,
+                                    col.labels.i = col.type$oc,
+                                    title = "Authors by Time - Symmetric")
+
+ca.label23 <- createxyLabels.gen(2,3,
+                               lambda = ca.res$ExPosition.Data$eigs,
+                               tau = round(ca.res$ExPosition.Data$t),
+                               axisName = "Component "
+)
+
+ca.plot.byNation23$baseMap + ca.label23 + ca.plot.byNation23$I_points + ca.plot.byNation23$J_points + ca.plot.byNation23$J_labels
+
+ca.plot.byTime23$baseMap + ca.label23 + ca.plot.byTime23$I_points + ca.plot.byTime23$J_points + ca.plot.byTime23$J_labels
+
+ca.plot.byType23$baseMap + ca.label23 + ca.plot.byType23$I_points + ca.plot.byType23$J_points + ca.plot.byType23$J_labels
+```
+
+#### Interactive
+
+```{r}
+fi2plot23 <- ca.res$ExPosition.Data$fi[,2:3] %>% as.data.frame
+fj2plot23 <- ca.res$ExPosition.Data$fj[,2:3] %>% as.data.frame
+colnames(fj2plot23) <- colnames(fi2plot23) <- paste0("Component", c(2,3))
+
+p2.23 <- ggplot() +
+  geom_hline(yintercept = 0, size = 0.1) + geom_vline(xintercept = 0, size = 0.1) +
+  geom_point(data = fi2plot23, aes(x = Component2, y = Component3, text = rownames(ca.res$ExPosition.Data$fi)), color = col.nationality) +
+  geom_point(data = fj2plot23, aes(x = Component2, y = Component3), color = "darkolivegreen", pch = 18, size = 3) + 
+  geom_text(data = fj2plot23, aes(x = Component2, y = Component3, label = rownames(ca.res$ExPosition.Data$fj)), color = "darkolivegreen", size = 5, nudge_y = 0.08) + 
+  theme_bw()
+
+ggplotly(p2.23, tooltip = c("text"))
+```
+
+#### Row factor scores (Authors)
+```{r}
+ca.plot.byNation23 <- createFactorMap(ca.res$ExPosition.Data$fi,axis1 = 2, axis2 = 3,
+                                    text.cex = 3,
+                                    col.points = col.nationality,
+                                    col.labels = col.nationality,
+                                    title = "Authors by nationality - Symmetric")#,
+
+ca.plot.byNation23$zeMap + ca.label23
+
+ca.plot.byTime23 <- createFactorMap(ca.res$ExPosition.Data$fi,axis1 = 2, axis2 = 3,
+                                  text.cex = 3,
+                                  col.points = col.time,
+                                  col.labels = col.time,
+                                  title = "Authors by Time - Symmetric")#,
+
+ca.plot.byTime23$zeMap + ca.label23
+
+```
+
+#### Column factor scores (Punctuations)
+```{r}
+ca.j.plot23 <- createFactorMap(ca.res$ExPosition.Data$fj,
+                             axis1 = 2, axis2 = 3, 
+                             text.cex = 5,
+                             col.points = "darkolivegreen",
+                             col.labels = "darkolivegreen",
+                             pch = 18,
+                             title = "Punctuations - Symmetric")#,
+
+ca.j.plot23$zeMap + ca.label23
+```
