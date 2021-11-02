@@ -31,10 +31,14 @@ unb.group.idx <- c("en(ca)18th and before" = "~Amrc.19th",
                "en(uk)20th on" = "UK.20th+",
                "fr(fr)20th on" = "Fr.20th+",
                "fr(us)19th" = "~Amrc.19th")
-data.dx.unblnc$GroupDiCA <- recode(checkgroup, !!!unb.group.idx)
+data.dx.unblnc$GroupDiCA <- as.factor(recode(checkgroup, !!!unb.group.idx))
 kable(table(data.dx.unblnc$GroupDiCA))
 ```
 
+```{r}
+checkgroup.supp <- sprintf("%s(%s)%s", supp.dx.unblnc$Language, supp.dx.unblnc$Nationality, supp.dx.unblnc$Time.recod)
+supp.dx.unblnc$GroupDiCA <- as.factor(recode(checkgroup.supp, !!!unb.group.idx))
+```
 
 ## We want to group the authors into 7 groups to have 15 authors in each group
 
@@ -65,7 +69,7 @@ blnc.group.idx <- c("en(ca)18th and before" = "~Eng.18th",
                "en(uk)20th on" = "UK.20th+",
                "fr(fr)20th on" = "Fr.20th+",
                "fr(us)19th" = NA)
-data.dx.blnc$GroupDiCA <- recode(checkgroup.blnc, !!!blnc.group.idx)
+data.dx.blnc$GroupDiCA <- as.factor(recode(checkgroup.blnc, !!!blnc.group.idx))
 
 ## Remove everyone with an NA (cleaned version)
 FrEnAuthors.blncC <- FrEnAuthors.blnc[which(!is.na(data.dx.blnc$GroupDiCA)),]
@@ -73,4 +77,20 @@ data.dx.blncC <- data.dx.blnc[which(!is.na(data.dx.blnc$GroupDiCA)),]
 
 kable(table(data.dx.blnc$GroupDiCA))
 ```
+
+```{r}
+checkgroup.supp <- sprintf("%s(%s)%s", supp.dx.blnc$Language, supp.dx.blnc$Nationality, supp.dx.blnc$Time.recod)
+supp.dx.blnc$GroupDiCA <- recode(checkgroup.supp, !!!blnc.group.idx)
+supp.dx.blnc$GroupDiCA[is.na(supp.dx.blnc$GroupDiCA)] <- "US.19th"
+supp.dx.blnc$GroupDiCA <- as.factor(supp.dx.blnc$GroupDiCA)
+```
+
+## Save data
+
+```{r}
+save(data.dx.blncC, data.dx.unblnc, FrEnAuthors.blncC, FrEnAuthors.unblnc,
+     supp.dx.blnc, supp.dx.unblnc, FrEnAuthors.blnc.supp, FrEnAuthors.unblnc.supp,
+     file = "../Data/EnFrAuthors_blnc_unblnc_cleaned.rda")
+```
+
 
