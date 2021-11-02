@@ -45,6 +45,8 @@ raw.dx <- raw.dx[duplicated(raw.dx) == FALSE, ]
 raw.dx$`keep-balanced` <- is.na(raw.dx$`keep-balanced`)
 raw.dx$`keep-unbalanced` <- is.na(raw.dx$`keep-unbalanced`)
 raw.dx$Supp <- !is.na(raw.dx$Supp)
+raw.dx$`Supp-balanced` <- !is.na(raw.dx$`Supp-balanced`)
+
 # raw.dx$keepDiCA <- !is.na(raw.dx$keepDiCA)
 
 # recode Time
@@ -58,11 +60,13 @@ raw.dx[,c("Language", "Nationality", "Type", "Time", "Time.recod", "Note")] <- l
 raw.dx[which(raw.dx$Authors == "Poe, Edgar Allan" & raw.dx$Language == "fr"),"Authors"] <- "Poedelaire"
 
 
-data.dx.blnc <- raw.dx[which(raw.dx$`keep-balanced` == "TRUE" & raw.dx$Supp == "FALSE"),]
+data.dx.blnc <- raw.dx[which(raw.dx$`keep-balanced` == "TRUE" & raw.dx$`Supp-balanced` == "FALSE"),]
 
 data.dx.unblnc <- raw.dx[which(raw.dx$`keep-unbalanced` == "TRUE" & raw.dx$Supp == "FALSE"),]
 
-supp.dx <- raw.dx[which(raw.dx$Supp == "TRUE"),]
+supp.dx.blnc <- raw.dx[which(raw.dx$`keep-balanced` == "TRUE" & raw.dx$`Supp-balanced` == "TRUE"),]
+
+supp.dx.unblnc <- raw.dx[which(raw.dx$`keep-unbalanced` == "TRUE" & raw.dx$Supp == "TRUE"),]
 
 # data.dx <- raw.dx[which(raw.dx$keepDiCA == "TRUE" & raw.dx$Supp == "FALSE"),]
 # supp.dx <- raw.dx[which(raw.dx$keepDiCA == "TRUE" & raw.dx$Supp == "TRUE"),]
@@ -90,7 +94,7 @@ FrEnAuthors.unblnc[fr.author,] <- frdat.cmb[fr.author,]
 FrEnAuthors.blnc <- FrEnAuthors.unblnc[which(data.dx.unblnc$`keep-balanced` == TRUE),]
 Brontë <- colSums(FrEnAuthors.blnc[which(data.dx.blnc$Note == "merge"),] )
 FrEnAuthors.blnc <- rbind(FrEnAuthors.blnc, Brontë)
-data.dx.blnc <- rbind(data.dx.blnc, c("T", "Brontë", "en", "uk", "TRUE", "TRUE", "FALSE", "novelist", "19th", NA, "19th"))
+data.dx.blnc <- rbind(data.dx.blnc, c("T", "Brontë", "en", "uk", "TRUE", "TRUE", "FALSE", "FALSE", "novelist", "19th", NA, "19th"))
 
 ## delete Bronte
 FrEnAuthors.blnc <- FrEnAuthors.blnc[-which(data.dx.blnc$Note == "merge"),]
@@ -100,21 +104,34 @@ data.dx.blnc <- data.dx.blnc[-which(data.dx.blnc$Note == "merge"),]
 ## Get supplementary
 
 ```{r}
-FrEnAuthors.supp <- matrix(nrow  = nrow(supp.dx), ncol = ncol(alldat.cmb), dimnames = list(supp.dx$Authors, colnames(alldat.cmb)))
+## For unbalanced design
+FrEnAuthors.unblnc.supp <- matrix(nrow  = nrow(supp.dx.unblnc), ncol = ncol(alldat.cmb), dimnames = list(supp.dx.unblnc$Authors, colnames(alldat.cmb)))
 
 ## extract authors' data from the English subset
-en.author.supp <- supp.dx[which(supp.dx$Language == "en"), "Authors"]
-FrEnAuthors.supp[en.author.supp,] <- endat.cmb[en.author.supp,]
+en.author.supp <- supp.dx.unblnc[which(supp.dx.unblnc$Language == "en"), "Authors"]
+FrEnAuthors.unblnc.supp[en.author.supp,] <- endat.cmb[en.author.supp,]
 
 ## extract authors' data from the French subset
-fr.author.supp <- supp.dx[which(supp.dx$Language == "fr"), "Authors"]
-FrEnAuthors.supp[fr.author.supp,] <- frdat.cmb[fr.author.supp,]
+fr.author.supp <- supp.dx.unblnc[which(supp.dx.unblnc$Language == "fr"), "Authors"]
+FrEnAuthors.unblnc.supp[fr.author.supp,] <- frdat.cmb[fr.author.supp,]
+
+## For balanced design
+FrEnAuthors.blnc.supp <- matrix(nrow  = nrow(supp.dx.blnc), ncol = ncol(alldat.cmb), dimnames = list(supp.dx.blnc$Authors, colnames(alldat.cmb)))
+
+## extract authors' data from the English subset
+en.author.supp <- supp.dx.blnc[which(supp.dx.blnc$Language == "en"), "Authors"]
+FrEnAuthors.blnc.supp[en.author.supp,] <- endat.cmb[en.author.supp,]
+
+## extract authors' data from the French subset
+fr.author.supp <- supp.dx.blnc[which(supp.dx.blnc$Language == "fr"), "Authors"]
+FrEnAuthors.blnc.supp[fr.author.supp,] <- frdat.cmb[fr.author.supp,]
 ```
 
 ## Save cleaned authors data
 
 ```{r}
-save(FrEnAuthors.unblnc, data.dx.unblnc, FrEnAuthors.blnc, data.dx.blnc, FrEnAuthors.supp, supp.dx, file = "../Data/EnFrAuthors_blnc_unblnc.rda")
+save(FrEnAuthors.unblnc, data.dx.unblnc, FrEnAuthors.blnc, data.dx.blnc, 
+     FrEnAuthors.blnc.supp, supp.dx.blnc, FrEnAuthors.unblnc.supp, supp.dx.unblnc, file = "../Data/EnFrAuthors_blnc_unblnc.rda")
 ```
 
 

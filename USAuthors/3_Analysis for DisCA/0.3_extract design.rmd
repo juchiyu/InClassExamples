@@ -8,9 +8,35 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(kableExtra)
+
+## Load data
+load("../Data/EnFrAuthors_blnc_unblnc.rda")
 ```
 
-## We want to group the authors into 7 groups
+## For the unbalanced design, we keep the original design
+
+All US and CA authors before the 20th (including 19th and before) are grouped as one.
+
+```{r}
+checkgroup <- sprintf("%s(%s)%s", data.dx.unblnc$Language, data.dx.unblnc$Nationality, data.dx.unblnc$Time.recod)
+unb.group.idx <- c("en(ca)18th and before" = "~Amrc.19th",
+               "en(us)18th and before" = "~Amrc.19th",
+               "en(uk)18th and before" = "~UK.18th",
+               "fr(fr)18th and before" = "~Fr.18th",
+               "en(us)19th" = "~Amrc.19th",
+               "en(uk)19th" = "UK.19th",
+               "fr(fr)19th" = "Fr.19th",
+               "en(us)20th on" = "Amrc.20th+",
+               "en(uk)20th on" = "UK.20th+",
+               "fr(fr)20th on" = "Fr.20th+",
+               "fr(us)19th" = "~Amrc.19th")
+data.dx.unblnc$GroupDiCA <- recode(checkgroup, !!!unb.group.idx)
+kable(table(data.dx.unblnc$GroupDiCA))
+```
+
+
+## We want to group the authors into 7 groups to have 15 authors in each group
 
 + French - 18th and before
 
@@ -18,4 +44,33 @@ library(tidyverse)
 
 + French - 20th and on
 
-+ English (including )
++ English (including US, UK, CA) - 18th and before
+
++ UK - 19th
+
++ UK - 20th and on
+
++ US - 20th and on
+
+```{r}
+checkgroup.blnc <- sprintf("%s(%s)%s", data.dx.blnc$Language, data.dx.blnc$Nationality, data.dx.blnc$Time.recod)
+blnc.group.idx <- c("en(ca)18th and before" = "~Eng.18th",
+               "en(us)18th and before" = "~Eng.18th",
+               "en(uk)18th and before" = "~Eng.18th",
+               "fr(fr)18th and before" = "~Fr.18th",
+               "en(us)19th" = NA,
+               "en(uk)19th" = "UK.19th",
+               "fr(fr)19th" = "Fr.19th",
+               "en(us)20th on" = "US.20th+",
+               "en(uk)20th on" = "UK.20th+",
+               "fr(fr)20th on" = "Fr.20th+",
+               "fr(us)19th" = NA)
+data.dx.blnc$GroupDiCA <- recode(checkgroup.blnc, !!!blnc.group.idx)
+
+## Remove everyone with an NA (cleaned version)
+FrEnAuthors.blncC <- FrEnAuthors.blnc[which(!is.na(data.dx.blnc$GroupDiCA)),]
+data.dx.blncC <- data.dx.blnc[which(!is.na(data.dx.blnc$GroupDiCA)),]
+
+kable(table(data.dx.blnc$GroupDiCA))
+```
+
