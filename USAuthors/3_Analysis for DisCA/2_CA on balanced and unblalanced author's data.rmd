@@ -5,6 +5,14 @@ date: "11/2/2021"
 output: html_document
 ---
 
+<style type="text/css">
+.main-container {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -22,6 +30,15 @@ library(ggplotify)
 # library(ComplexHeatmap)
 
 load("../Data/EnFrAuthors_blnc_unblnc_cleaned.rda")
+
+## get color ------------------
+col.idx <- c("~Fr.18th" = "navy", "Fr.19th" = "royalblue2", "Fr.20th+" = "steelblue2", "~Eng.18th" = "brown", "~UK.18th" = "darkorange3", "UK.19th" = "darkorange2","UK.20th+" = "darkgoldenrod1", "~Amrc.19th" = "firebrick", "Amrc.20th+" = "palevioletred", "US.20th+" = "palevioletred")
+
+col.group.blnc <- as.matrix(recode(data.dx.blncC$GroupDiCA, !!!col.idx))
+rownames(col.group.blnc) <- data.dx.blncC$Authors
+
+col.group.unblnc <- as.matrix(recode(data.dx.unblnc$GroupDiCA, !!!col.idx))
+rownames(col.group.unblnc) <- data.dx.unblnc$Authors
 ```
 
 # Data and results {.tabset}
@@ -33,7 +50,7 @@ This data set counts the number of punctuation from works of a selected list of 
 The balanced data set has 15 authors in these 7 groups:
 
 |        |  ~18th  |  19th  |  20th+  |
-|--------|---------|--------|---------|
+|--------|:-------:|--------|---------|
 | French |    15   |   15   |    15   |
 |British |:   15  :|   15   |    15   |
 |American|^^       |   -    |    15   |       
@@ -41,13 +58,13 @@ The balanced data set has 15 authors in these 7 groups:
 
 ### The contingency table
 
-```{r}
+```{r, include=FALSE}
 knitr::kable(FrEnAuthors.blncC) %>% kable_styling("striped", full_width = F) %>% 
- scroll_box(width = "800px", height = "600px")
+  scroll_box(width = "800px", height = "600px")
 ```
 
 ### The pattern in heatmap
-```{r, fig.show = 'hold', out.width = "33.3%"}
+```{r, include=FALSE, fig.show = 'hold', out.width = "33.3%"}
 coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25) # Pink (Neg) to Green (Pos)
 
 # Original data
@@ -59,6 +76,392 @@ heatmap(makeRowProfiles(FrEnAuthors.blncC)$deviations, Rowv = NA, Colv = NA, col
 
 ```
 
+### CA
+```{r}
+ca.blnc <- epCA(FrEnAuthors.blncC, symmetric = TRUE, graphs = FALSE)
+PlotScree(ca.blnc$ExPosition.Data$eigs)
+```
+
+### Factor scores {.tabset}
+
+#### Components 1 & 2
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+## Lables
+ca.label12.blnc <- createxyLabels.gen(1,2,
+                                      lambda = ca.blnc$ExPosition.Data$eigs,
+                                      tau = round(ca.blnc$ExPosition.Data$t),
+                                      axisName = "Component "
+)
+
+## Biplot
+ca.plot12.blnc <- createFactorMapIJ(ca.blnc$ExPosition.Data$fi, ca.blnc$ExPosition.Data$fj,axis1 = 1, axis2 = 2,
+                                    text.cex.i = 3,
+                                    col.points.i = col.group.blnc[rownames(ca.blnc$ExPosition.Data$fi),],
+                                    col.labels.i = col.group.blnc[rownames(ca.blnc$ExPosition.Data$fi),],
+                                    title = "Authors by nationality x time")
+ca.plot12.blnc$baseMap + ca.label12.blnc + ca.plot12.blnc$I_points + ca.plot12.blnc$J_points + ca.plot12.blnc$J_labels
+
+## Only Fj
+caj.plot12.blnc <- createFactorMap(ca.blnc$ExPosition.Data$fj,
+                                   axis1 = 1, axis2 = 2, 
+                                   text.cex = 5,
+                                   col.points = "darkolivegreen",
+                                   col.labels = "darkolivegreen",
+                                   pch = 18,
+                                   title = "Punctuations - balanced")#,
+
+caj.plot12.blnc$zeMap + ca.label12.blnc
+```
+
+```{r, echo=FALSE}
+## Only Fi
+fi2plot <- ca.blnc$ExPosition.Data$fi[,1:2] %>% as.data.frame
+fj2plot <- ca.blnc$ExPosition.Data$fj[,1:2] %>% as.data.frame
+colnames(fj2plot) <- colnames(fi2plot) <- paste0("Component", c(1,2))
+
+p2 <- ggplot() +
+  geom_hline(yintercept = 0, size = 0.1) + geom_vline(xintercept = 0, size = 0.1) +
+  geom_point(data = fi2plot, aes(x = Component1, y = Component2, 
+                                 text = rownames(ca.blnc$ExPosition.Data$fi)), 
+             color = col.group.blnc[rownames(ca.blnc$ExPosition.Data$fi),]) +
+  geom_point(data = fj2plot, aes(x = Component1, y = Component2), color = "darkolivegreen", pch = 18, size = 3) + 
+  geom_text(data = fj2plot, aes(x = Component1, y = Component2, label = rownames(ca.blnc$ExPosition.Data$fj)), color = "darkolivegreen", size = 5, nudge_y = 0.08) + 
+  coord_equal() +
+  theme_bw()
+
+ggplotly(p2, tooltip = c("text"))
+```
 
 
+#### Components 3 and 4
 
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+## Lables
+ca.label34.blnc <- createxyLabels.gen(3,4,
+                                      lambda = ca.blnc$ExPosition.Data$eigs,
+                                      tau = round(ca.blnc$ExPosition.Data$t),
+                                      axisName = "Component "
+)
+
+## Biplot
+ca.plot34.blnc <- createFactorMapIJ(ca.blnc$ExPosition.Data$fi, ca.blnc$ExPosition.Data$fj,
+                                    axis1 = 3, axis2 = 4,
+                                    text.cex.i = 3,
+                                    col.points.i = col.group.blnc[rownames(ca.blnc$ExPosition.Data$fi),],
+                                    col.labels.i = col.group.blnc[rownames(ca.blnc$ExPosition.Data$fi),],
+                                    title = "Authors by nationality x time")
+ca.plot34.blnc$baseMap + ca.label34.blnc + ca.plot34.blnc$I_points + ca.plot34.blnc$J_points + ca.plot34.blnc$J_labels
+
+## Only Fj
+caj.plot34.blnc <- createFactorMap(ca.blnc$ExPosition.Data$fj,
+                                   axis1 = 3, axis2 = 4, 
+                                   text.cex = 5,
+                                   col.points = "darkolivegreen",
+                                   col.labels = "darkolivegreen",
+                                   pch = 18,
+                                   title = "Punctuations - balanced")#,
+
+caj.plot34.blnc$zeMap + ca.label34.blnc
+```
+
+```{r, echo=FALSE}
+## Only Fi
+fi2plot <- ca.blnc$ExPosition.Data$fi[,3:4] %>% as.data.frame
+fj2plot <- ca.blnc$ExPosition.Data$fj[,3:4] %>% as.data.frame
+colnames(fj2plot) <- colnames(fi2plot) <- paste0("Component", c(3,4))
+
+p2 <- ggplot() +
+  geom_hline(yintercept = 0, size = 0.1) + geom_vline(xintercept = 0, size = 0.1) +
+  geom_point(data = fi2plot, aes(x = Component3, y = Component4, 
+                                 text = rownames(ca.blnc$ExPosition.Data$fi)), 
+             color = col.group.blnc[rownames(ca.blnc$ExPosition.Data$fi),]) +
+  geom_point(data = fj2plot, aes(x = Component3, y = Component4), color = "darkolivegreen", pch = 18, size = 3) + 
+  geom_text(data = fj2plot, aes(x = Component3, y = Component4, label = rownames(ca.blnc$ExPosition.Data$fj)), color = "darkolivegreen", size = 5, nudge_y = 0.08) + 
+  coord_equal() +
+  theme_bw()
+
+ggplotly(p2, tooltip = c("text"))
+
+```
+
+
+### Factor scores with group means {.tabset}
+
+```{r, echo = FALSE}
+caMean.blnc <- getMeans(ca.blnc$ExPosition.Data$fi, data.dx.blncC$GroupDiCA)
+caBoot.blnc <- Boot4Mean(ca.blnc$ExPosition.Data$fi, data.dx.blncC$GroupDiCA)
+colnames(ca.blnc$ExPosition.Data$fi) <- colnames(ca.blnc$ExPosition.Data$fj) <- colnames(caMean.blnc) <- colnames(caBoot.blnc$BootCube) <- paste0("Component ", c(1:ncol(caBoot.blnc$BootCube)))
+```
+
+#### Components 1 & 2
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+caMean.plot12.blnc <- createFactorMapIJ(caMean.blnc, ca.blnc$ExPosition.Data$fj,
+                                        axis1 = 1, axis2 = 2,
+                                        constraints = minmaxHelper(ca.blnc$ExPosition.Data$fi,
+                                                                   axis1 = 1, axis2 = 2),
+                                        text.cex.i = 4, text.cex.j = 4,
+                                        cex.i = 3, pch.i = 17, alpha.points.i = 1,
+                                        cex.j = 4, alpha.poin.j = 1,
+                                        col.points.i = col.idx[rownames(caMean.blnc)],
+                                        col.labels.i = col.idx[rownames(caMean.blnc)],
+                                        title = "Author groups by nationality x time")
+
+caMeanCI.12.blnc <- MakeCIEllipses(caBoot.blnc$BootCube[,c(1,2),], axis1 = 1, axis2 = 2, 
+                                   names.of.factors = paste0("Component ", c(1:2)),
+                                   col = col.idx[rownames(caBoot.blnc$BootCube)], 
+                                   p.level = .95, line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.1)
+caTI.12.blnc <- MakeToleranceIntervals(ca.blnc$ExPosition.Data$fi,
+                                       data.dx.blncC$GroupDiCA,
+                                       axis1 = 1, axis2 = 2,
+                                       names.of.factors = paste0("Component ", c(1:2)),
+                                       col = col.idx[rownames(caMean.blnc)],
+                                       p.level = .95, 
+                                       line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.05)
+caMean.plot12.blnc$baseMap + caMeanCI.12.blnc + caMean.plot12.blnc$I_labels + caMean.plot12.blnc$I_points + caMean.plot12.blnc$J_labels + caMean.plot12.blnc$J_points + ca.label12.blnc
+
+caMean.plot12.blnc$baseMap + caTI.12.blnc + caMean.plot12.blnc$I_labels + caMean.plot12.blnc$I_points + caMean.plot12.blnc$J_labels + caMean.plot12.blnc$J_points + ca.label12.blnc
+
+```
+
+#### Components 3 & 4
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+caMean.plot34.blnc <- createFactorMapIJ(caMean.blnc, ca.blnc$ExPosition.Data$fj,
+                                        axis1 = 3, axis2 = 4,
+                                        constraints = minmaxHelper(ca.blnc$ExPosition.Data$fi,
+                                                                   axis1 = 3, axis2 = 4),
+                                        text.cex.i = 4, text.cex.j = 4,
+                                        cex.i = 3, pch.i = 17, alpha.points.i = 1,
+                                        cex.j = 4, alpha.poin.j = 1,
+                                        col.points.i = col.idx[rownames(caMean.blnc)],
+                                        col.labels.i = col.idx[rownames(caMean.blnc)],
+                                        title = "Author groups by nationality x time")
+
+caMeanCI.34.blnc <- MakeCIEllipses(caBoot.blnc$BootCube, axis1 = 3, axis2 = 4, 
+                                   names.of.factors = paste0("Component ", c(3:4)),
+                                   col = col.idx[rownames(caBoot.blnc$BootCube)], 
+                                   p.level = .95, line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.1)
+caTI.34.blnc <- MakeToleranceIntervals(ca.blnc$ExPosition.Data$fi,
+                                       data.dx.blncC$GroupDiCA,
+                                       axis1 = 3, axis2 = 4,
+                                       names.of.factors = paste0("Component ", c(3:4)),
+                                       col = col.idx[rownames(caMean.blnc)],
+                                       p.level = .95, 
+                                       line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.05)
+caMean.plot34.blnc$baseMap + caMeanCI.34.blnc + caMean.plot34.blnc$I_labels + caMean.plot34.blnc$I_points + caMean.plot34.blnc$J_labels + caMean.plot34.blnc$J_points
+
+caMean.plot34.blnc$baseMap + caTI.34.blnc + caMean.plot34.blnc$I_labels + caMean.plot34.blnc$I_points + caMean.plot34.blnc$J_labels + caMean.plot34.blnc$J_points
+
+```
+
+## Unbalanced data set
+
+The unbalanced data set includes 160 authors of these 8 groups:
+
+|        |  ~18th  |  19th  |  20th+  |
+|--------|:-------:|:------:|---------|
+| French |    16   |   28   |    19   |
+|British |    11   |   28   |    22   |
+|American|    14           ||    22   |       
+
+
+### The contingency table
+
+```{r, echo=FALSE}
+knitr::kable(FrEnAuthors.unblnc) %>% kable_styling("striped", full_width = F) %>% 
+  scroll_box(width = "800px", height = "600px")
+```
+
+### The pattern in heatmap
+```{r, echo=FALSE, fig.show = 'hold', out.width = "33.3%"}
+# Original data
+heatmap(FrEnAuthors.unblnc, Rowv = NA, Colv = NA)
+# Row profiles
+heatmap(makeRowProfiles(FrEnAuthors.unblnc)$rowProfiles, Rowv = NA, Colv = NA)
+# Deviation from independence
+heatmap(makeRowProfiles(FrEnAuthors.unblnc)$deviations, Rowv = NA, Colv = NA, col = coul)
+
+```
+
+### CA
+```{r}
+ca.unblnc <- epCA(FrEnAuthors.unblnc, symmetric = TRUE, graphs = FALSE)
+PlotScree(ca.unblnc$ExPosition.Data$eigs)
+```
+
+### Factor scores {.tabset}
+
+#### Components 1 & 2
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+## Lables
+ca.label12.unblnc <- createxyLabels.gen(1,2,
+                                      lambda = ca.unblnc$ExPosition.Data$eigs,
+                                      tau = round(ca.unblnc$ExPosition.Data$t),
+                                      axisName = "Component "
+)
+
+## Biplot
+ca.plot12.unblnc <- createFactorMapIJ(ca.unblnc$ExPosition.Data$fi, ca.unblnc$ExPosition.Data$fj,axis1 = 1, axis2 = 2,
+                                    text.cex.i = 3,
+                                    col.points.i = col.group.unblnc[rownames(ca.unblnc$ExPosition.Data$fi),],
+                                    col.labels.i = col.group.unblnc[rownames(ca.unblnc$ExPosition.Data$fi),],
+                                    title = "Authors by nationality x time")
+ca.plot12.unblnc$baseMap + ca.label12.unblnc + ca.plot12.unblnc$I_points + ca.plot12.unblnc$J_points + ca.plot12.unblnc$J_labels
+
+## Only Fj
+caj.plot12.unblnc <- createFactorMap(ca.unblnc$ExPosition.Data$fj,
+                                   axis1 = 1, axis2 = 2, 
+                                   text.cex = 5,
+                                   col.points = "darkolivegreen",
+                                   col.labels = "darkolivegreen",
+                                   pch = 18,
+                                   title = "Punctuations - balanced")#,
+
+caj.plot12.unblnc$zeMap + ca.label12.unblnc
+```
+
+```{r, echo=FALSE}
+## Only Fi
+fi2plot <- ca.unblnc$ExPosition.Data$fi[,1:2] %>% as.data.frame
+fj2plot <- ca.unblnc$ExPosition.Data$fj[,1:2] %>% as.data.frame
+colnames(fj2plot) <- colnames(fi2plot) <- paste0("Component", c(1,2))
+
+p2 <- ggplot() +
+  geom_hline(yintercept = 0, size = 0.1) + geom_vline(xintercept = 0, size = 0.1) +
+  geom_point(data = fi2plot, aes(x = Component1, y = Component2, 
+                                 text = rownames(ca.unblnc$ExPosition.Data$fi)), 
+             color = col.group.unblnc[rownames(ca.unblnc$ExPosition.Data$fi),]) +
+  geom_point(data = fj2plot, aes(x = Component1, y = Component2), color = "darkolivegreen", pch = 18, size = 3) + 
+  geom_text(data = fj2plot, aes(x = Component1, y = Component2, label = rownames(ca.unblnc$ExPosition.Data$fj)), color = "darkolivegreen", size = 5, nudge_y = 0.08) + 
+  coord_equal() +
+  theme_bw()
+
+ggplotly(p2, tooltip = c("text"))
+
+```
+
+
+#### Components 3 and 4
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+## Lables
+ca.label34.unblnc <- createxyLabels.gen(3,4,
+                                      lambda = ca.unblnc$ExPosition.Data$eigs,
+                                      tau = round(ca.unblnc$ExPosition.Data$t),
+                                      axisName = "Component "
+)
+
+## Biplot
+ca.plot34.unblnc <- createFactorMapIJ(ca.unblnc$ExPosition.Data$fi, ca.unblnc$ExPosition.Data$fj,
+                                    axis1 = 3, axis2 = 4,
+                                    text.cex.i = 3,
+                                    col.points.i = col.group.unblnc[rownames(ca.unblnc$ExPosition.Data$fi),],
+                                    col.labels.i = col.group.unblnc[rownames(ca.unblnc$ExPosition.Data$fi),],
+                                    title = "Authors by nationality x time")
+ca.plot34.unblnc$baseMap + ca.label34.unblnc + ca.plot34.unblnc$I_points + ca.plot34.unblnc$J_points + ca.plot34.unblnc$J_labels
+
+## Only Fj
+caj.plot34.unblnc <- createFactorMap(ca.unblnc$ExPosition.Data$fj,
+                                   axis1 = 3, axis2 = 4, 
+                                   text.cex = 5,
+                                   col.points = "darkolivegreen",
+                                   col.labels = "darkolivegreen",
+                                   pch = 18,
+                                   title = "Punctuations - balanced")#,
+
+caj.plot34.unblnc$zeMap + ca.label34.unblnc
+```
+
+```{r, echo=FALSE}
+## Only Fi
+fi2plot <- ca.unblnc$ExPosition.Data$fi[,3:4] %>% as.data.frame
+fj2plot <- ca.unblnc$ExPosition.Data$fj[,3:4] %>% as.data.frame
+colnames(fj2plot) <- colnames(fi2plot) <- paste0("Component", c(3,4))
+
+p2 <- ggplot() +
+  geom_hline(yintercept = 0, size = 0.1) + geom_vline(xintercept = 0, size = 0.1) +
+  geom_point(data = fi2plot, aes(x = Component3, y = Component4, 
+                                 text = rownames(ca.unblnc$ExPosition.Data$fi)), 
+             color = col.group.unblnc[rownames(ca.unblnc$ExPosition.Data$fi),]) +
+  geom_point(data = fj2plot, aes(x = Component3, y = Component4), color = "darkolivegreen", pch = 18, size = 3) + 
+  geom_text(data = fj2plot, aes(x = Component3, y = Component4, label = rownames(ca.unblnc$ExPosition.Data$fj)), color = "darkolivegreen", size = 5, nudge_y = 0.08) + 
+  coord_equal() +
+  theme_bw()
+
+ggplotly(p2, tooltip = c("text"))
+
+```
+
+
+### Factor scores with group means {.tabset}
+
+```{r, echo = FALSE}
+caMean.unblnc <- getMeans(ca.unblnc$ExPosition.Data$fi, data.dx.unblnc$GroupDiCA)
+caBoot.unblnc <- Boot4Mean(ca.unblnc$ExPosition.Data$fi, data.dx.unblnc$GroupDiCA)
+colnames(ca.unblnc$ExPosition.Data$fi) <- colnames(ca.unblnc$ExPosition.Data$fj) <- colnames(caMean.unblnc) <- colnames(caBoot.unblnc$BootCube) <- paste0("Component ", c(1:ncol(caBoot.unblnc$BootCube)))
+```
+
+#### Components 1 & 2
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+caMean.plot12.unblnc <- createFactorMapIJ(caMean.unblnc, ca.unblnc$ExPosition.Data$fj,
+                                        axis1 = 1, axis2 = 2,
+                                        constraints = minmaxHelper(ca.unblnc$ExPosition.Data$fi,
+                                                                   axis1 = 1, axis2 = 2),
+                                        text.cex.i = 4, text.cex.j = 4,
+                                        cex.i = 3, pch.i = 17, alpha.points.i = 1,
+                                        cex.j = 4, alpha.poin.j = 1,
+                                        col.points.i = col.idx[rownames(caMean.unblnc)],
+                                        col.labels.i = col.idx[rownames(caMean.unblnc)],
+                                        title = "Author groups by nationality x time")
+
+caMeanCI.12.unblnc <- MakeCIEllipses(caBoot.unblnc$BootCube[,c(1,2),], axis1 = 1, axis2 = 2, 
+                                   names.of.factors = paste0("Component ", c(1:2)),
+                                   col = col.idx[rownames(caBoot.unblnc$BootCube)], 
+                                   p.level = .95, line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.1)
+caTI.12.unblnc <- MakeToleranceIntervals(ca.unblnc$ExPosition.Data$fi,
+                                       data.dx.unblnc$GroupDiCA,
+                                       axis1 = 1, axis2 = 2,
+                                       names.of.factors = paste0("Component ", c(1:2)),
+                                       col = col.idx[rownames(caMean.unblnc)],
+                                       p.level = .95, 
+                                       line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.05)
+caMean.plot12.unblnc$baseMap + caMeanCI.12.unblnc + caMean.plot12.unblnc$I_labels + caMean.plot12.unblnc$I_points + caMean.plot12.unblnc$J_labels + caMean.plot12.unblnc$J_points + ca.label12.unblnc
+
+caMean.plot12.unblnc$baseMap + caTI.12.unblnc + caMean.plot12.unblnc$I_labels + caMean.plot12.unblnc$I_points + caMean.plot12.unblnc$J_labels + caMean.plot12.unblnc$J_points + ca.label12.unblnc
+
+```
+
+#### Components 3 & 4
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+caMean.plot34.unblnc <- createFactorMapIJ(caMean.unblnc, ca.unblnc$ExPosition.Data$fj,
+                                        axis1 = 3, axis2 = 4,
+                                        constraints = minmaxHelper(ca.unblnc$ExPosition.Data$fi,
+                                                                   axis1 = 3, axis2 = 4),
+                                        text.cex.i = 4, text.cex.j = 4,
+                                        cex.i = 3, pch.i = 17, alpha.points.i = 1,
+                                        cex.j = 4, alpha.poin.j = 1,
+                                        col.points.i = col.idx[rownames(caMean.unblnc)],
+                                        col.labels.i = col.idx[rownames(caMean.unblnc)],
+                                        title = "Author groups by nationality x time")
+
+caMeanCI.34.unblnc <- MakeCIEllipses(caBoot.unblnc$BootCube, axis1 = 3, axis2 = 4, 
+                                   names.of.factors = paste0("Component ", c(3:4)),
+                                   col = col.idx[rownames(caBoot.unblnc$BootCube)], 
+                                   p.level = .95, line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.1)
+caTI.34.unblnc <- MakeToleranceIntervals(ca.unblnc$ExPosition.Data$fi,
+                                       data.dx.unblnc$GroupDiCA,
+                                       axis1 = 3, axis2 = 4,
+                                       names.of.factors = paste0("Component ", c(3:4)),
+                                       col = col.idx[rownames(caMean.unblnc)],
+                                       p.level = .95, 
+                                       line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.05)
+caMean.plot34.unblnc$baseMap + caMeanCI.34.unblnc + caMean.plot34.unblnc$I_labels + caMean.plot34.unblnc$I_points + caMean.plot34.unblnc$J_labels + caMean.plot34.unblnc$J_points
+
+caMean.plot34.unblnc$baseMap + caTI.34.unblnc + caMean.plot34.unblnc$I_labels + caMean.plot34.unblnc$I_points + caMean.plot34.unblnc$J_labels + caMean.plot34.unblnc$J_points
+
+```
