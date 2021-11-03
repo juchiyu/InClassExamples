@@ -91,14 +91,18 @@ FrEnAuthors.unblnc[fr.author,] <- frdat.cmb[fr.author,]
 ## ONLY RUN FOR THE BALANCED DATA SET ===========================
 ## *** *** *** *** *** *** *** *** ***
 ## merge Bronte
-FrEnAuthors.blnc <- FrEnAuthors.unblnc[which(data.dx.unblnc$`keep-balanced` == TRUE),]
-Brontë <- colSums(FrEnAuthors.blnc[which(data.dx.blnc$Note == "merge"),] )
+author2keep.blnc <- data.dx.blnc[which(data.dx.blnc$`keep-balanced` == TRUE), "Authors"]
+find.Brontes <- data.dx.blnc[which(data.dx.blnc$Note == "merge"), "Authors"]
+
+FrEnAuthors.blnc <- FrEnAuthors.unblnc[author2keep.blnc,]
+Brontë <- colSums(FrEnAuthors.blnc[find.Brontes,])
 FrEnAuthors.blnc <- rbind(FrEnAuthors.blnc, Brontë)
 data.dx.blnc <- rbind(data.dx.blnc, c("T", "Brontë", "en", "uk", "TRUE", "TRUE", "FALSE", "FALSE", "novelist", "19th", NA, "19th"))
 
 ## delete Bronte
-FrEnAuthors.blnc <- FrEnAuthors.blnc[-which(data.dx.blnc$Note == "merge"),]
-data.dx.blnc <- data.dx.blnc[-which(data.dx.blnc$Note == "merge"),]
+not.Brontes <- rownames(FrEnAuthors.blnc)[!(rownames(FrEnAuthors.blnc) %in% find.Brontes)]
+FrEnAuthors.blnc <- FrEnAuthors.blnc[not.Brontes,]
+data.dx.blnc <- data.dx.blnc[which(data.dx.blnc$Authors %in% not.Brontes),]
 ```
 
 ## Get supplementary
