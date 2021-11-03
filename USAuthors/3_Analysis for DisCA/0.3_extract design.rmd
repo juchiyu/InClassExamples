@@ -72,7 +72,8 @@ blnc.group.idx <- c("en(ca)18th and before" = "~Eng.18th",
 data.dx.blnc$GroupDiCA <- as.factor(recode(checkgroup.blnc, !!!blnc.group.idx))
 
 ## Remove everyone with an NA (cleaned version)
-FrEnAuthors.blncC <- FrEnAuthors.blnc[which(!is.na(data.dx.blnc$GroupDiCA)),]
+author2keep <- data.dx.blnc$Authors[which(!is.na(data.dx.blnc$GroupDiCA))]
+FrEnAuthors.blncC <- FrEnAuthors.blnc[author2keep,]
 data.dx.blncC <- data.dx.blnc[which(!is.na(data.dx.blnc$GroupDiCA)),]
 
 kable(table(data.dx.blnc$GroupDiCA))

@@ -1,0 +1,64 @@
+---
+title: "CA on balanced and unbalanced author's data"
+author: "Ju-Chi.Yu"
+date: "11/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ExPosition)
+library(PTCA4CATA)
+library(ggplot2)
+library(ggrepel)
+library(tidyverse)
+library(plotly)
+library(RColorBrewer)
+library(kableExtra)
+library(ggpubr)
+library(ggplotify)
+# devtools:install_github("jokergoo/ComplexHeatmap")
+# library(ComplexHeatmap)
+
+load("../Data/EnFrAuthors_blnc_unblnc_cleaned.rda")
+```
+
+# Data and results {.tabset}
+
+This data set counts the number of punctuation from works of a selected list of authors. These authors are from US (1 from Canada), UK, and France and range from 14th to the 21st century. The idea of this analysis is to demonstrate that the use of punctuation can roughly represent style and can therefore differentiate authors of different style, background, and fields. Here, we include two analyses: one with balanced sample sizes (each group has the same number of authors), and the other with unbalanced sample sizes (the original selected set).
+
+## Balanced data set
+
+The balanced data set has 15 authors in these 7 groups:
+
+|        |  ~18th  |  19th  |  20th+  |
+|--------|---------|--------|---------|
+| French |    15   |   15   |    15   |
+|British |:   15  :|   15   |    15   |
+|American|^^       |   -    |    15   |       
+
+
+### The contingency table
+
+```{r}
+knitr::kable(FrEnAuthors.blncC) %>% kable_styling("striped", full_width = F) %>% 
+ scroll_box(width = "800px", height = "600px")
+```
+
+### The pattern in heatmap
+```{r, fig.show = 'hold', out.width = "33.3%"}
+coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25) # Pink (Neg) to Green (Pos)
+
+# Original data
+heatmap(FrEnAuthors.blncC, Rowv = NA, Colv = NA)
+# Row profiles
+heatmap(makeRowProfiles(FrEnAuthors.blncC)$rowProfiles, Rowv = NA, Colv = NA)
+# Deviation from independence
+heatmap(makeRowProfiles(FrEnAuthors.blncC)$deviations, Rowv = NA, Colv = NA, col = coul)
+
+```
+
+
+
+
