@@ -1,0 +1,476 @@
+---
+title: "3_DiCA on balanced and unbalanced author's data"
+author: "Ju-Chi.Yu"
+date: "11/3/2021"
+output: html_document
+---
+
+<style type="text/css">
+.main-container {
+max-width: 1800px;
+margin-left: auto;
+margin-right: auto;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(TInPosition)
+library(PTCA4CATA)
+library(ggplot2)
+library(ggrepel)
+library(tidyverse)
+library(plotly)
+library(RColorBrewer)
+library(kableExtra)
+library(ggpubr)
+library(ggplotify)
+# devtools:install_github("jokergoo/ComplexHeatmap")
+# library(ComplexHeatmap)
+
+load("../Data/EnFrAuthors_blnc_unblnc_cleaned.rda")
+
+## get color ------------------
+col.idx <- c("~Fr.18th" = "navy", "Fr.19th" = "royalblue2", "Fr.20th+" = "steelblue2", "~Eng.18th" = "brown", "~UK.18th" = "darkorange3", "UK.19th" = "darkorange2","UK.20th+" = "darkgoldenrod1", "~Amrc.19th" = "firebrick", "Amrc.20th+" = "palevioletred", "US.20th+" = "palevioletred")
+
+col.group.blnc <- as.matrix(recode(data.dx.blncC$GroupDiCA, !!!col.idx))
+rownames(col.group.blnc) <- data.dx.blncC$Authors
+
+col.group.unblnc <- as.matrix(recode(data.dx.unblnc$GroupDiCA, !!!col.idx))
+rownames(col.group.unblnc) <- data.dx.unblnc$Authors
+```
+
+# Data and results {.tabset}
+
+This data set counts the number of punctuation from works of a selected list of authors. These authors are from US (1 from Canada), UK, and France and range from 14th to the 21st century. The idea of this analysis is to demonstrate that the use of punctuation can roughly represent style and can therefore differentiate authors of different style, background, and fields. Here, we include two analyses: one with balanced sample sizes (each group has the same number of authors), and the other with unbalanced sample sizes (the original selected set).
+
+## Balanced data set
+
+The balanced data set has 15 authors in these 7 groups:
+
+|        |  ~18th  |  19th  |  20th+  |
+|--------|:-------:|--------|---------|
+| French |    15   |   15   |    15   |
+|British |:   15  :|   15   |    15   |
+|American|^^       |   -    |    15   |       
+
+
+### The contingency table
+
+```{r, include=FALSE}
+knitr::kable(FrEnAuthors.blncC) %>% kable_styling("striped", full_width = F) %>% 
+  scroll_box(width = "800px", height = "600px")
+```
+
+### The group pattern in heatmap
+```{r, include=FALSE, fig.show = 'hold', out.width = "33.3%"}
+coul <- colorRampPalette(brewer.pal(8, "PiYG"))(25) # Pink (Neg) to Green (Pos)
+
+blnc.dx.disj <- makeNominalData(as.matrix(data.dx.blncC$GroupDiCA))
+groupCntgy.blnc <- t(blnc.dx.disj) %*% FrEnAuthors.blncC
+rownames(groupCntgy.blnc) <- sub(".","", rownames(groupCntgy.blnc))
+
+# Original data
+heatmap(groupCntgy.blnc, Rowv = NA, Colv = NA)
+# Row profiles
+heatmap(makeRowProfiles(groupCntgy.blnc)$rowProfiles, Rowv = NA, Colv = NA, )
+# Deviation from independence
+heatmap(makeRowProfiles(groupCntgy.blnc)$deviations, Rowv = NA, Colv = NA, col = coul)
+
+```
+
+### DiCA
+```{r}
+dica.blnc <- tepDICA.inference.battery(FrEnAuthors.blncC, make_data_nominal = FALSE, 
+                                       blnc.dx.disj, make_design_nominal = FALSE, symmetric = TRUE, graphs = FALSE)
+rownames(dica.blnc$Fixed.Data$TExPosition.Data$fi) <- sub(".","", rownames(dica.blnc$Fixed.Data$TExPosition.Data$fi))
+colnames(dica.blnc$Fixed.Data$TExPosition.Data$fi) <- paste0("Component ", c(1:ncol(dica.blnc$Fixed.Data$TExPosition.Data$fi)))
+colnames(dica.blnc$Fixed.Data$TExPosition.Data$fj) <- paste0("Component ", c(1:ncol(dica.blnc$Fixed.Data$TExPosition.Data$fj)))
+colnames(dica.blnc$Fixed.Data$TExPosition.Data$fii) <- paste0("Component ", c(1:ncol(dica.blnc$Fixed.Data$TExPosition.Data$fii)))
+
+PlotScree(dica.blnc$Fixed.Data$TExPosition.Data$eigs)
+```
+
+### Factor scores {.tabset}
+
+#### Components 1 & 2
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+dica.blnc.fi <- dica.blnc$Fixed.Data$TExPosition.Data$fi
+dica.blnc.fii <- dica.blnc$Fixed.Data$TExPosition.Data$fii
+dica.blnc.fj <- dica.blnc$Fixed.Data$TExPosition.Data$fj
+
+## Lables
+dica.label12.blnc <- createxyLabels.gen(1,2,
+                                        lambda = dica.blnc$Fixed.Data$TExPosition.Data$eigs,
+                                        tau = round(dica.blnc$Fixed.Data$TExPosition.Data$t),
+                                        axisName = "Component "
+)
+
+## Biplot
+dica.fii12.blnc <- createFactorMap(dica.blnc.fii,
+                                   axis1 = 1, axis2 = 2,
+                                   constraints = minmaxHelper(dica.blnc.fii, dica.blnc.fj, axis1 = 1, axis2 = 2),
+                                   col.points = col.group.blnc[rownames(dica.blnc.fii),], alpha.points = 0.2)
+dica.plot12.blnc <- createFactorMapIJ(dica.blnc.fi, 
+                                      dica.blnc.fj,axis1 = 1, axis2 = 2,
+                                      text.cex.i = 4, cex.i = 4, pch.i = 17, alpha.points.i = 1,
+                                      cex.j = 4, alpha.poin.j = 1,
+                                      col.points.i = col.idx[rownames(dica.blnc.fi)],
+                                      col.labels.i = col.idx[rownames(dica.blnc.fi)],
+                                      title = "Authors by nationality x time")
+dica.fii12.blnc$zeMap_background + dica.label12.blnc + dica.fii12.blnc$zeMap_dots + dica.plot12.blnc$I_points + dica.plot12.blnc$I_labels + dica.plot12.blnc$J_points + dica.plot12.blnc$J_labels
+
+## Only Fj
+dicaj.plot12.blnc <- createFactorMap(dica.blnc.fj,
+                                     axis1 = 1, axis2 = 2, 
+                                     text.cex = 5,
+                                     col.points = "darkolivegreen",
+                                     col.labels = "darkolivegreen",
+                                     pch = 18,
+                                     title = "Punctuations - balanced")#,
+
+dicaj.plot12.blnc$zeMap + dica.label12.blnc
+```
+
+```{r, echo=FALSE}
+## Only Fii
+fii2plot <- dica.blnc.fii[,1:2] %>% as.data.frame
+fj2plot <- dica.blnc.fj[,1:2] %>% as.data.frame
+colnames(fj2plot) <- colnames(fii2plot) <- paste0("Component", c(1,2))
+
+p2 <- ggplot() +
+  geom_hline(yintercept = 0, size = 0.1) + geom_vline(xintercept = 0, size = 0.1) +
+  geom_point(data = fii2plot, aes(x = Component1, y = Component2, 
+                                 text = rownames(dica.blnc.fii)), 
+             color = col.group.blnc[rownames(dica.blnc.fii),]) +
+  geom_point(data = fj2plot, aes(x = Component1, y = Component2), color = "darkolivegreen", pch = 18, size = 3) + 
+  geom_text(data = fj2plot, aes(x = Component1, y = Component2, label = rownames(dica.blnc.fj)), color = "darkolivegreen", size = 5, nudge_y = 0.08) + 
+  coord_equal() +
+  theme_bw()
+
+ggplotly(p2, tooltip = c("text"))
+```
+
+
+#### Components 3 and 4
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "33.33%"}
+## Lables
+dica.label34.blnc <- createxyLabels.gen(3,4,
+                                      lambda = dica.blnc$Fixed.Data$TExPosition.Data$eigs,
+                                      tau = round(dica.blnc$Fixed.Data$TExPosition.Data$t),
+                                      axisName = "Component "
+)
+
+## Biplot
+dica.fii34.blnc <- createFactorMap(dica.blnc.fii,
+                                   axis1 = 3, axis2 = 4,
+                                   constraints = minmaxHelper(dica.blnc.fii, dica.blnc.fj, axis1 = 3, axis2 = 4),
+                                   col.points = col.group.blnc[rownames(dica.blnc.fii),], alpha.points = 0.2)
+dica.plot34.blnc <- createFactorMapIJ(dica.blnc.fi, 
+                                      dica.blnc.fj,axis1 = 3, axis2 = 4,
+                                      text.cex.i = 4, cex.i = 4, pch.i = 17, alpha.points.i = 1,
+                                      cex.j = 4, alpha.poin.j = 1,
+                                      col.points.i = col.idx[rownames(dica.blnc.fi)],
+                                      col.labels.i = col.idx[rownames(dica.blnc.fi)],
+                                      title = "Authors by nationality x time")
+dica.fii34.blnc$zeMap_background + dica.label34.blnc + dica.fii34.blnc$zeMap_dots + dica.plot34.blnc$I_points + dica.plot34.blnc$I_labels
+
+dica.plot34.blnc$baseMap + dica.label34.blnc + dica.fii34.blnc$zeMap_dots + dica.plot34.blnc$I_points + dica.plot34.blnc$I_labels + dica.plot34.blnc$J_points + dica.plot34.blnc$J_labels
+
+## Only Fj
+dicaj.plot34.blnc <- createFactorMap(dica.blnc.fj,
+                                   axis1 = 3, axis2 = 4, 
+                                   text.cex = 5,
+                                   col.points = "darkolivegreen",
+                                   col.labels = "darkolivegreen",
+                                   pch = 18,
+                                   title = "Punctuations - balanced")#,
+
+dicaj.plot34.blnc$zeMap + dica.label34.blnc
+```
+
+```{r, echo=FALSE}
+## Only Fii
+fii2plot <- dica.blnc.fii[,3:4] %>% as.data.frame
+fj2plot <- dica.blnc.fj[,3:4] %>% as.data.frame
+colnames(fj2plot) <- colnames(fii2plot) <- paste0("Component", c(3,4))
+
+p2 <- ggplot() +
+  geom_hline(yintercept = 0, size = 0.1) + geom_vline(xintercept = 0, size = 0.1) +
+  geom_point(data = fii2plot, aes(x = Component3, y = Component4, 
+                                 text = rownames(dica.blnc.fii)), 
+             color = col.group.blnc[rownames(dica.blnc.fii),]) +
+  geom_point(data = fj2plot, aes(x = Component3, y = Component4), color = "darkolivegreen", pch = 18, size = 3) + 
+  geom_text(data = fj2plot, aes(x = Component3, y = Component4, label = rownames(dica.blnc.fj)), color = "darkolivegreen", size = 5, nudge_y = 0.08) + 
+  coord_equal() +
+  theme_bw()
+
+ggplotly(p2, tooltip = c("text"))
+
+```
+
+
+### Factor scores with confidence intervals {.tabset}
+
+#### Components 1 & 2
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+dica.blnc.boot <- dica.blnc$Inference.Data$boot.data$fi.boot.data$boots
+rownames(dica.blnc.boot) <- sub(".", "", rownames(dica.blnc.boot))
+colnames(dica.blnc.boot) <- paste0("Component ", c(1:ncol(dica.blnc.boot)))
+
+dicaCI.12.blnc <- MakeCIEllipses(dica.blnc.boot, axis1 = 1, axis2 = 2, 
+                                   names.of.factors = paste0("Component ", c(1:2)),
+                                   col = col.idx[rownames(dica.blnc.boot)], 
+                                   p.level = .95, line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.1)
+dicaTI.12.blnc <- MakeToleranceIntervals(dica.blnc.fii,
+                                       data.dx.blncC$GroupDiCA,
+                                       axis1 = 1, axis2 = 2,
+                                       names.of.factors = paste0("Component ", c(1:2)),
+                                       col = col.idx[levels(data.dx.blncC$GroupDiCA)],
+                                       p.level = .95, 
+                                       line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.05)
+
+dica.plot12.blnc$baseMap + dicaCI.12.blnc + dica.plot12.blnc$I_labels + dica.plot12.blnc$I_points + dica.plot12.blnc$J_labels + dica.plot12.blnc$J_points + dica.label12.blnc
+
+dica.fii12.blnc$zeMap_background + dicaTI.12.blnc + dica.plot12.blnc$I_labels + dica.plot12.blnc$I_points + dica.plot12.blnc$J_labels + dica.plot12.blnc$J_points + dica.label12.blnc
+
+```
+
+#### Components 3 & 4
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+dicaCI.34.blnc <- MakeCIEllipses(dica.blnc.boot, axis1 = 3, axis2 = 4, 
+                                   names.of.factors = paste0("Component ", c(3:4)),
+                                   col = col.idx[rownames(dica.blnc.boot)], 
+                                   p.level = .95, line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.1)
+dicaTI.34.blnc <- MakeToleranceIntervals(dica.blnc.fii,
+                                       data.dx.blncC$GroupDiCA,
+                                       axis1 = 3, axis2 = 4,
+                                       names.of.factors = paste0("Component ", c(3:4)),
+                                       col = col.idx[levels(data.dx.blncC$GroupDiCA)],
+                                       p.level = .95, 
+                                       line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.05)
+
+dica.fii34.blnc$zeMap_background + dicaCI.34.blnc + dica.plot34.blnc$I_labels + dica.plot34.blnc$I_points + dica.plot34.blnc$J_labels + dica.plot34.blnc$J_points + dica.label34.blnc
+
+dica.fii34.blnc$zeMap_background + dicaTI.34.blnc + dica.plot34.blnc$I_labels + dica.plot34.blnc$I_points + dica.plot34.blnc$J_labels + dica.plot34.blnc$J_points + dica.label34.blnc
+
+```
+
+## Unbalanced data set
+
+The unbalanced data set includes 160 authors of these 8 groups:
+
+|        |  ~18th  |  19th  |  20th+  |
+|--------|:-------:|:------:|---------|
+| French |    16   |   28   |    19   |
+|British |    11   |   28   |    22   |
+|American|    14           ||    22   |       
+
+
+### The contingency table
+
+```{r, echo=FALSE}
+knitr::kable(FrEnAuthors.unblnc) %>% kable_styling("striped", full_width = F) %>% 
+  scroll_box(width = "800px", height = "600px")
+```
+
+### The group pattern in heatmap
+```{r, include=FALSE, fig.show = 'hold', out.width = "33.3%"}
+unblnc.dx.disj <- makeNominalData(as.matrix(data.dx.unblnc$GroupDiCA))
+groupCntgy.unblnc <- t(unblnc.dx.disj) %*% FrEnAuthors.unblnc
+rownames(groupCntgy.unblnc) <- sub(".","", rownames(groupCntgy.unblnc))
+
+# Original data
+heatmap(groupCntgy.unblnc, Rowv = NA, Colv = NA)
+# Row profiles
+heatmap(makeRowProfiles(groupCntgy.unblnc)$rowProfiles, Rowv = NA, Colv = NA, )
+# Deviation from independence
+heatmap(makeRowProfiles(groupCntgy.unblnc)$deviations, Rowv = NA, Colv = NA, col = coul)
+
+```
+
+### DiCA
+```{r}
+dica.unblnc <- tepDICA.inference.battery(FrEnAuthors.unblnc, make_data_nominal = FALSE, 
+                                       unblnc.dx.disj, make_design_nominal = FALSE, symmetric = TRUE, graphs = FALSE)
+rownames(dica.unblnc$Fixed.Data$TExPosition.Data$fi) <- sub(".","", rownames(dica.unblnc$Fixed.Data$TExPosition.Data$fi))
+colnames(dica.unblnc$Fixed.Data$TExPosition.Data$fi) <- paste0("Component ", c(1:ncol(dica.unblnc$Fixed.Data$TExPosition.Data$fi)))
+colnames(dica.unblnc$Fixed.Data$TExPosition.Data$fj) <- paste0("Component ", c(1:ncol(dica.unblnc$Fixed.Data$TExPosition.Data$fj)))
+colnames(dica.unblnc$Fixed.Data$TExPosition.Data$fii) <- paste0("Component ", c(1:ncol(dica.unblnc$Fixed.Data$TExPosition.Data$fii)))
+
+PlotScree(dica.unblnc$Fixed.Data$TExPosition.Data$eigs)
+```
+
+### Factor scores {.tabset}
+
+#### Components 1 & 2
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+dica.unblnc.fi <- dica.unblnc$Fixed.Data$TExPosition.Data$fi
+dica.unblnc.fii <- dica.unblnc$Fixed.Data$TExPosition.Data$fii
+dica.unblnc.fj <- dica.unblnc$Fixed.Data$TExPosition.Data$fj
+
+## Lables
+dica.label12.unblnc <- createxyLabels.gen(1,2,
+                                        lambda = dica.unblnc$Fixed.Data$TExPosition.Data$eigs,
+                                        tau = round(dica.unblnc$Fixed.Data$TExPosition.Data$t),
+                                        axisName = "Component "
+)
+
+## Biplot
+dica.fii12.unblnc <- createFactorMap(dica.unblnc.fii,
+                                   axis1 = 1, axis2 = 2,
+                                   constraints = minmaxHelper(dica.unblnc.fii, dica.unblnc.fj, axis1 = 1, axis2 = 2),
+                                   col.points = col.group.unblnc[rownames(dica.unblnc.fii),], alpha.points = 0.2)
+dica.plot12.unblnc <- createFactorMapIJ(dica.unblnc.fi, 
+                                      dica.unblnc.fj,axis1 = 1, axis2 = 2,
+                                      text.cex.i = 4, cex.i = 4, pch.i = 17, alpha.points.i = 1,
+                                      cex.j = 4, alpha.poin.j = 1,
+                                      col.points.i = col.idx[rownames(dica.unblnc.fi)],
+                                      col.labels.i = col.idx[rownames(dica.unblnc.fi)],
+                                      title = "Authors by nationality x time")
+dica.fii12.unblnc$zeMap_background + dica.label12.unblnc + dica.fii12.unblnc$zeMap_dots + dica.plot12.unblnc$I_points + dica.plot12.unblnc$I_labels + dica.plot12.unblnc$J_points + dica.plot12.unblnc$J_labels
+
+## Only Fj
+dicaj.plot12.unblnc <- createFactorMap(dica.unblnc.fj,
+                                     axis1 = 1, axis2 = 2, 
+                                     text.cex = 5,
+                                     col.points = "darkolivegreen",
+                                     col.labels = "darkolivegreen",
+                                     pch = 18,
+                                     title = "Punctuations - balanced")#,
+
+dicaj.plot12.unblnc$zeMap + dica.label12.unblnc
+```
+
+```{r, echo=FALSE}
+## Only Fii
+fii2plot <- dica.unblnc.fii[,1:2] %>% as.data.frame
+fj2plot <- dica.unblnc.fj[,1:2] %>% as.data.frame
+colnames(fj2plot) <- colnames(fii2plot) <- paste0("Component", c(1,2))
+
+p2 <- ggplot() +
+  geom_hline(yintercept = 0, size = 0.1) + geom_vline(xintercept = 0, size = 0.1) +
+  geom_point(data = fii2plot, aes(x = Component1, y = Component2, 
+                                 text = rownames(dica.unblnc.fii)), 
+             color = col.group.unblnc[rownames(dica.unblnc.fii),]) +
+  geom_point(data = fj2plot, aes(x = Component1, y = Component2), color = "darkolivegreen", pch = 18, size = 3) + 
+  geom_text(data = fj2plot, aes(x = Component1, y = Component2, label = rownames(dica.unblnc.fj)), color = "darkolivegreen", size = 5, nudge_y = 0.08) + 
+  coord_equal() +
+  theme_bw()
+
+ggplotly(p2, tooltip = c("text"))
+```
+
+
+#### Components 3 and 4
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "33.33%"}
+## Lables
+dica.label34.unblnc <- createxyLabels.gen(3,4,
+                                      lambda = dica.unblnc$Fixed.Data$TExPosition.Data$eigs,
+                                      tau = round(dica.unblnc$Fixed.Data$TExPosition.Data$t),
+                                      axisName = "Component "
+)
+
+## Biplot
+dica.fii34.unblnc <- createFactorMap(dica.unblnc.fii,
+                                   axis1 = 3, axis2 = 4,
+                                   constraints = minmaxHelper(dica.unblnc.fii, dica.unblnc.fj, axis1 = 3, axis2 = 4),
+                                   col.points = col.group.unblnc[rownames(dica.unblnc.fii),], alpha.points = 0.2)
+dica.plot34.unblnc <- createFactorMapIJ(dica.unblnc.fi, 
+                                      dica.unblnc.fj,axis1 = 3, axis2 = 4,
+                                      text.cex.i = 4, cex.i = 4, pch.i = 17, alpha.points.i = 1,
+                                      cex.j = 4, alpha.poin.j = 1,
+                                      col.points.i = col.idx[rownames(dica.unblnc.fi)],
+                                      col.labels.i = col.idx[rownames(dica.unblnc.fi)],
+                                      title = "Authors by nationality x time")
+dica.fii34.unblnc$zeMap_background + dica.label34.unblnc + dica.fii34.unblnc$zeMap_dots + dica.plot34.unblnc$I_points + dica.plot34.unblnc$I_labels
+
+dica.plot34.unblnc$baseMap + dica.label34.unblnc + dica.fii34.unblnc$zeMap_dots + dica.plot34.unblnc$I_points + dica.plot34.unblnc$I_labels + dica.plot34.unblnc$J_points + dica.plot34.unblnc$J_labels
+
+## Only Fj
+dicaj.plot34.unblnc <- createFactorMap(dica.unblnc.fj,
+                                   axis1 = 3, axis2 = 4, 
+                                   text.cex = 5,
+                                   col.points = "darkolivegreen",
+                                   col.labels = "darkolivegreen",
+                                   pch = 18,
+                                   title = "Punctuations - balanced")#,
+
+dicaj.plot34.unblnc$zeMap + dica.label34.unblnc
+```
+
+```{r, echo=FALSE}
+## Only Fii
+fii2plot <- dica.unblnc.fii[,3:4] %>% as.data.frame
+fj2plot <- dica.unblnc.fj[,3:4] %>% as.data.frame
+colnames(fj2plot) <- colnames(fii2plot) <- paste0("Component", c(3,4))
+
+p2 <- ggplot() +
+  geom_hline(yintercept = 0, size = 0.1) + geom_vline(xintercept = 0, size = 0.1) +
+  geom_point(data = fii2plot, aes(x = Component3, y = Component4, 
+                                 text = rownames(dica.unblnc.fii)), 
+             color = col.group.unblnc[rownames(dica.unblnc.fii),]) +
+  geom_point(data = fj2plot, aes(x = Component3, y = Component4), color = "darkolivegreen", pch = 18, size = 3) + 
+  geom_text(data = fj2plot, aes(x = Component3, y = Component4, label = rownames(dica.unblnc.fj)), color = "darkolivegreen", size = 5, nudge_y = 0.08) + 
+  coord_equal() +
+  theme_bw()
+
+ggplotly(p2, tooltip = c("text"))
+
+```
+
+
+### Factor scores with confidence intervals {.tabset}
+
+#### Components 1 & 2
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+dica.unblnc.boot <- dica.unblnc$Inference.Data$boot.data$fi.boot.data$boots
+rownames(dica.unblnc.boot) <- sub(".", "", rownames(dica.unblnc.boot))
+colnames(dica.unblnc.boot) <- paste0("Component ", c(1:ncol(dica.unblnc.boot)))
+
+dicaCI.12.unblnc <- MakeCIEllipses(dica.unblnc.boot, axis1 = 1, axis2 = 2, 
+                                   names.of.factors = paste0("Component ", c(1:2)),
+                                   col = col.idx[rownames(dica.unblnc.boot)], 
+                                   p.level = .95, line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.1)
+dicaTI.12.unblnc <- MakeToleranceIntervals(dica.unblnc.fii,
+                                       data.dx.unblnc$GroupDiCA,
+                                       axis1 = 1, axis2 = 2,
+                                       names.of.factors = paste0("Component ", c(1:2)),
+                                       col = col.idx[levels(data.dx.unblnc$GroupDiCA)],
+                                       p.level = .95, 
+                                       line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.05)
+
+dica.plot12.unblnc$baseMap + dicaCI.12.unblnc + dica.plot12.unblnc$I_labels + dica.plot12.unblnc$I_points + dica.plot12.unblnc$J_labels + dica.plot12.unblnc$J_points + dica.label12.unblnc
+
+dica.fii12.unblnc$zeMap_background + dicaTI.12.unblnc + dica.plot12.unblnc$I_labels + dica.plot12.unblnc$I_points + dica.plot12.unblnc$J_labels + dica.plot12.unblnc$J_points + dica.label12.unblnc
+
+```
+
+#### Components 3 & 4
+
+```{r, echo=FALSE, fig.show = 'hold', out.width = "50%"}
+dicaCI.34.unblnc <- MakeCIEllipses(dica.unblnc.boot, axis1 = 3, axis2 = 4, 
+                                   names.of.factors = paste0("Component ", c(3:4)),
+                                   col = col.idx[rownames(dica.unblnc.boot)], 
+                                   p.level = .95, line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.1)
+dicaTI.34.unblnc <- MakeToleranceIntervals(dica.unblnc.fii,
+                                       data.dx.unblnc$GroupDiCA,
+                                       axis1 = 3, axis2 = 4,
+                                       names.of.factors = paste0("Component ", c(3:4)),
+                                       col = col.idx[levels(data.dx.unblnc$GroupDiCA)],
+                                       p.level = .95, 
+                                       line.size = 0.5, alpha.line = 0.5, alpha.ellipse = 0.05)
+
+dica.fii34.unblnc$zeMap_background + dicaCI.34.unblnc + dica.plot34.unblnc$I_labels + dica.plot34.unblnc$I_points + dica.plot34.unblnc$J_labels + dica.plot34.unblnc$J_points + dica.label34.unblnc
+
+dica.fii34.unblnc$zeMap_background + dicaTI.34.unblnc + dica.plot34.unblnc$I_labels + dica.plot34.unblnc$I_points + dica.plot34.unblnc$J_labels + dica.plot34.unblnc$J_points + dica.label34.unblnc
+
+```
